@@ -12,6 +12,7 @@ const TextField = styledComponents.input`
 	border-bottom-right-radius: 0;
 	border: 1px solid #e5e5e5;
 	padding: 0 32px 0 16px;
+	margin-top: 20px;
 
 	&:hover {
 		cursor: pointer;
@@ -29,11 +30,12 @@ const ClearButton = styledComponents(Button)`
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background-color: rgb(26, 151, 245);
+	background-color: #fc4b6c;
 	color: #FFFFFF;
-	
+	margin-top: 20px;
+
 	&:hover {
-		background-color: rgb(26, 151, 245);
+		background-color: #fc4b6c;
 	}
 `;
 
