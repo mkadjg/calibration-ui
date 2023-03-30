@@ -41,6 +41,7 @@ const Sidebar = (props) => {
     } else {
       setMenuItems([]);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const SidebarContent = (

@@ -88,6 +88,7 @@ const CustomerCalibration = () => {
     setTrackModal(false);
   }
 
+  // eslint-disable-next-line no-unused-vars
   const handleOpenDeleteDialog = (id) => {
     setId(id);
     setDeleteDialog(true);

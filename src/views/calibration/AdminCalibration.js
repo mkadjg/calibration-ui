@@ -103,6 +103,7 @@ const AdminCalibration = () => {
     setTrackModal(false);
   }
 
+  // eslint-disable-next-line no-unused-vars
   const handleOpenDeleteDialog = (id) => {
     setId(id);
     setDeleteDialog(true);
@@ -184,6 +185,7 @@ const AdminCalibration = () => {
       });
   };
 
+  // eslint-disable-next-line no-unused-vars
   const forwardCalibration = () => {
     setLoading(true);
     axios

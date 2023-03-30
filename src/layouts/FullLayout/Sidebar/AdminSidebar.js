@@ -1,7 +1,6 @@
 import {
   DashboardOutlined,
   DescriptionOutlined,
-  ConstructionOutlined
 } from "@material-ui/icons/";
 
 const AdminSidebar = [
