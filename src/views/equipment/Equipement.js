@@ -107,7 +107,7 @@ const Equipment = () => {
     e.preventDefault();
     setLoading(true);
     axios
-      .post(`${process.env.REACT_APP_BASE_URL}/equipment/create`, body ,{ headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .post(`${process.env.REACT_APP_BASE_URL}/equipment`, body ,{ headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 201) {
           setSnackbar({
@@ -136,7 +136,7 @@ const Equipment = () => {
     e.preventDefault();
     item.customerId = cookies.auth.userProfile.id;
     axios
-      .put(`${process.env.REACT_APP_BASE_URL}/equipment/update/${item.id}`, item, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .put(`${process.env.REACT_APP_BASE_URL}/equipment/${item.id}`, item, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
           setSnackbar({
@@ -162,7 +162,7 @@ const Equipment = () => {
 
   const deleteEquipment = () => {
     axios
-      .delete(`${process.env.REACT_APP_BASE_URL}/equipment/delete/${id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .delete(`${process.env.REACT_APP_BASE_URL}/equipment/${id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
           setSnackbar({

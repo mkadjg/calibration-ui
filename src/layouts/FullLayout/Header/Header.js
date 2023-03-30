@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 //import { Link } from 'react-router-dom';
 import MenuOutlinedIcon from "@material-ui/icons/MenuOutlined";
 import NotificationsNoneOutlinedIcon from "@material-ui/icons/NotificationsNoneOutlined";
@@ -22,9 +22,14 @@ import {
 } from "@material-ui/core";
 
 import userimg from "../../../assets/images/users/user.jpg";
+import { useCookies } from "react-cookie";
+import { useNavigate } from "react-router-dom";
 
 const Header = (props) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const navigate = useNavigate();
+  // eslint-disable-next-line no-unused-vars
+  const [cookies, setCookies] = useCookies();
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -44,6 +49,11 @@ const Header = (props) => {
   const handleClose4 = () => {
     setAnchorEl4(null);
   };
+
+  const logout = () => {
+    setCookies('auth', {}, { path: '/' });
+    navigate("/login");
+  }
 
   // 5
   const [anchorEl5, setAnchorEl5] = React.useState(null);
@@ -259,7 +269,7 @@ const Header = (props) => {
             </ListItemIcon>
             Settings
           </MenuItem>
-          <MenuItem onClick={handleClose4}>
+          <MenuItem onClick={logout}>
             <ListItemIcon>
               <Logout fontSize="small" />
             </ListItemIcon>

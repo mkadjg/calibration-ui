@@ -9,7 +9,7 @@ import FilterComponent from "../../components/filter/FIlterComponent";
 import Moment from "react-moment";
 import { Timeline, TimelineConnector, TimelineContent, TimelineDot, TimelineItem, TimelineOppositeContent, TimelineSeparator } from "@material-ui/lab";
 
-const CustomerCalibration = () => {
+const AdminCalibration = () => {
   // eslint-disable-next-line no-unused-vars
   const [cookies, setCookies] = useCookies({});
   const [calibrations, setCalibrations] = useState([]);
@@ -18,7 +18,7 @@ const CustomerCalibration = () => {
   const [filterText, setFilterText] = useState('');
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
   const [calibrationTrack, setCalibrationTrack] = useState([]);
-  const [equipmentAutocomplete, setEquipmentAutocomplete] = useState([]);
+  const [technicianAutocomplete, setTechnicianAutocomplete] = useState([]);
   const filteredItems = calibrations.filter(
     (item) =>
       (item.equipment.equipmentName && item.equipment.equipmentName.toLowerCase().includes(filterText.toLowerCase())) ||
@@ -28,7 +28,8 @@ const CustomerCalibration = () => {
   );
 
   // modal
-  const [createModal, setCreateModal] = useState(false);
+  const [confirmModal, setConfirmModal] = useState(false);
+  const [forwarModal, setForwardModal] = useState(false);
   const [detailModal, setDetailModal] = useState(false);
   const [trackModal, setTrackModal] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
@@ -38,34 +39,48 @@ const CustomerCalibration = () => {
     message: ""
   });
   const [item, setItem] = useState({});
-  const [body, setBody] = useState({
-    equipmentId: 0,
-    calibrationNote: ''
+  const [confirm, setConfirm] = useState({
+    orderNumber: ''
+  });
+  const [forward, setForward] = useState({
+    technicianId: ''
   });
   const [id, setId] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const handleCreateChange = (e) => {
-    setBody({
-      ...body,
+  const handleConfirmChange = (e) => {
+    setConfirm({
+      ...confirm,
       [e.target.name]: e.target.value
     })
   }
 
   const handleAutocomplete = (e, v) => {
-    setBody({
-      ...body,
-      equipmentId: v.id
+    setForward({
+      ...forward,
+      technicianId: v.id
     })
   }
 
-  const handleOpenCreateModal = () => {
-    getEquipmentAutocomplete();
-    setCreateModal(true);
+  const handleOpenConfirmModal = (id) => {
+    setId(id);
+    setConfirmModal(true);
   }
 
-  const handleCloseCreateModal = () => {
-    setCreateModal(false);
+  const handleCloseConfirmModal = () => {
+    setItem({});
+    setConfirmModal(false);
+  }
+
+  const handleOpenForwardModal = (id) => {
+    setId(id);
+    getTechnicianAutocomplete();
+    setForwardModal(true);
+  }
+
+  const handleCloseForwardModal = () => {
+    setItem({});
+    setForwardModal(false);
   }
 
   const handleOpenDetailModal = (item) => {
@@ -105,7 +120,7 @@ const CustomerCalibration = () => {
 
   const getCalibrations = () => {
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/calibration/find-by-customer-id/${cookies.auth.userProfile.id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .get(`${process.env.REACT_APP_BASE_URL}/calibration`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
           setCalibrations(response.data);
@@ -113,34 +128,6 @@ const CustomerCalibration = () => {
       })
       .catch((error) => {
         console.log(error);
-      });
-  };
-
-  const createCalibration = (e) => {
-    e.preventDefault();
-    setLoading(true);
-    axios
-      .post(`${process.env.REACT_APP_BASE_URL}/calibration`, body, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
-      .then((response) => {
-        if (response.status === 201) {
-          setSnackbar({
-            open: true,
-            severity: "success",
-            message: "Simpan data berhasil"
-          });
-          setLoading(false);
-          handleCloseCreateModal();
-          getCalibrations();
-        }
-      })
-      .catch((error) => {
-        setSnackbar({
-          open: true,
-          severity: "error",
-          message: error.response?.data
-        });
-        setLoading(false);
-        handleCloseCreateModal();
       });
   };
 
@@ -157,16 +144,43 @@ const CustomerCalibration = () => {
       });
   };
 
-  const getEquipmentAutocomplete = (id) => {
+  const getTechnicianAutocomplete = (id) => {
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/equipment/autocomplete/${cookies.auth.userProfile.id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .get(`${process.env.REACT_APP_BASE_URL}/employee/technician/autocomplete`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
-          setEquipmentAutocomplete(response.data);
+          setTechnicianAutocomplete(response.data);
         }
       })
       .catch((error) => {
         console.log(error);
+      });
+  };
+
+  const confirmCalibration = () => {
+    setLoading(true);
+    axios
+      .post(`${process.env.REACT_APP_BASE_URL}/calibration/confirm/${id}`, confirm, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setSnackbar({
+            open: true,
+            severity: "success",
+            message: "Simpan data berhasil"
+          });
+          setLoading(false);
+          handleCloseConfirmModal();
+          getCalibrations();
+        }
+      })
+      .catch((error) => {
+        setSnackbar({
+          open: true,
+          severity: "success",
+          message: error.response?.data
+        });
+        setLoading(false);
+        handleCloseConfirmModal();
       });
   };
 
@@ -230,35 +244,35 @@ const CustomerCalibration = () => {
       selector: row => (
         <>
           <Button size="small" style={{ margin: '6px 3px 3px 0px' }}
+            onClick={() => handleOpenConfirmModal(row.id)}
+            variant="contained"
+            disabled={row.calibrationStatus.calibrationStatusCode !== 'SUBMITTED'}
+            color="success">
+            Konfirmasi
+          </Button>
+          <Button size="small" style={{ margin: '6px 3px 3px 3px' }}
             onClick={() => handleOpenDetailModal(row)}
             variant="contained"
             color="secondary">
             Detail
           </Button>
-          <Button size="small" style={{ margin: '6px 6px 3px 3px' }}
+          <br />
+          <Button size="small" style={{ margin: '3px 3px 6px 0px' }}
             onClick={() => handleOpenTrackModal(row.id)}
             variant="contained"
             color="info">
             Lacak
           </Button>
-          <br />
-          <Button size="small" style={{ margin: '3px 3px 6px 0px' }}
-            onClick={() => handleOpenTrackModal(row.id)}
+          <Button size="small" style={{ margin: '3px 3px 6px 3px' }}
+            onClick={() => handleOpenForwardModal(row.id)}
             variant="contained"
-            disabled={row.calibrationStatus.calibrationStatusCode !== 'FORWARD_TO_CUSTOMER'}
-            color="success">
-            Selesai
-          </Button>
-          <Button size="small" style={{ margin: '3px 6px 6px 3px' }}
-            onClick={() => handleOpenTrackModal(row.id)}
-            variant="contained"
-            disabled={row.calibrationStatus.calibrationStatusCode !== 'FINISHED'}
+            disabled={row.calibrationStatus.calibrationStatusCode !== 'CONFIRM_BY_ADMIN'}
             color="warning">
-            Nilai
+            Teruskan
           </Button>
         </>
       ),
-      width: '180px'
+      width: '200px'
     },
 
   ];
@@ -347,9 +361,6 @@ const CustomerCalibration = () => {
               <Grid item sm={8} md={10} lg={10}>
                 <Typography variant="h3">Daftar Kalibrasi</Typography>
               </Grid>
-              <Grid item sm={4} md={2} lg={2} style={{ paddingRight: '15px' }}>
-                <Button fullWidth variant="contained" color="primary" onClick={handleOpenCreateModal}>Tambah</Button>
-              </Grid>
             </Grid>
 
             <Box
@@ -378,8 +389,8 @@ const CustomerCalibration = () => {
       </Box>
 
       <Modal
-        open={createModal}
-        onClose={handleCloseCreateModal}
+        open={confirmModal}
+        onClose={handleCloseConfirmModal}
       >
         <Card
           variant="outlined"
@@ -402,7 +413,7 @@ const CustomerCalibration = () => {
                   fontWeight: "500",
                 }}
               >
-                Tambah Kalibrasi
+                Konfirmasi Kalibrasi
               </Typography>
             </Box>
           </Box>
@@ -413,37 +424,85 @@ const CustomerCalibration = () => {
             }}
           >
             <form>
-              <Autocomplete
-                disablePortal
-                id="combo-box-demo"
-                options={equipmentAutocomplete}
-                name="equipmentId"
-                onChange={handleAutocomplete}
-                fullWidth
-                renderInput={(params) => <TextField
-                  {...params}
-                  label="Pilih Peralatan"
-                  placeholder="Pilih Peralatan" />}
-                sx={{
-                  mb: 2,
-                }}
-              />
               <TextField
                 id="outlined-multiline-static"
-                label="Catatan Kalibrasi"
-                multiline
+                label="Nomor Order"
                 rows={4}
                 variant="outlined"
                 fullWidth
-                name="calibrationNote"
-                value={body.calibrationNote}
-                onChange={handleCreateChange}
+                name="orderNumber"
+                value={confirm.orderNumber}
+                onChange={handleConfirmChange}
                 sx={{
                   mb: 2,
                 }}
               />
               <div>
-                <Button onClick={createCalibration}
+                <Button onClick={confirmCalibration}
+                  fullWidth color="primary"
+                  size="large" variant="contained"
+                  disabled={loading}>
+                  {loading ? <CircularProgress size={26} color="inherit" /> : "Simpan"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </Modal>
+
+      <Modal
+        open={forwarModal}
+        onClose={handleCloseForwardModal}
+      >
+        <Card
+          variant="outlined"
+          sx={{
+            p: 0,
+          }}
+          style={modalPosition}
+        >
+          <Box
+            sx={{
+              padding: "15px 30px",
+            }}
+            display="flex"
+            alignItems="center"
+          >
+            <Box flexGrow={1}>
+              <Typography
+                sx={{
+                  fontSize: "18px",
+                  fontWeight: "500",
+                }}
+              >
+                Teruskan Kalibrasi
+              </Typography>
+            </Box>
+          </Box>
+          <Divider />
+          <CardContent
+            sx={{
+              padding: "30px",
+            }}
+          >
+            <form>
+              <Autocomplete 
+                disablePortal
+                id="combo-box-demo"
+                options={technicianAutocomplete}
+                name="technicianId"
+                onChange={handleAutocomplete}
+                fullWidth
+                renderInput={(params) => <TextField
+                  {...params}
+                  label="Pilih Teknisi"
+                  placeholder="Pilih Teknisi" />}
+                sx={{
+                  mb: 2,
+                }}
+              />
+              <div>
+                <Button onClick={confirmCalibration}
                   fullWidth color="primary"
                   size="large" variant="contained"
                   disabled={loading}>
@@ -856,4 +915,4 @@ const CustomerCalibration = () => {
   );
 };
 
-export default CustomerCalibration;
+export default AdminCalibration;

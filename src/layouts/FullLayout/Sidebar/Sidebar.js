@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router";
 import { Link, NavLink } from "react-router-dom";
 import {
@@ -12,13 +12,18 @@ import {
 } from "@material-ui/core";
 import { SidebarWidth } from "../../../assets/global/Theme-variable";
 import LogoIcon from "../Logo/LogoIcon";
-import Menuitems from "./CustomerSidebar";
+import CustomerSidebar from "./CustomerSidebar";
+import AdminSidebar from "./AdminSidebar";
+import { useCookies } from "react-cookie";
 
 const Sidebar = (props) => {
   const [open, setOpen] = React.useState(true);
   const { pathname } = useLocation();
   const pathDirect = pathname;
   const lgUp = useMediaQuery((theme) => theme.breakpoints.up("lg"));
+  // eslint-disable-next-line no-unused-vars
+  const [cookies, setCookies] = useCookies({});
+  const [menuItems, setMenuItems] = useState([]);
 
   const handleClick = (index) => {
     if (open === index) {
@@ -27,6 +32,16 @@ const Sidebar = (props) => {
       setOpen(index);
     }
   };
+
+  useEffect(() => {
+    if (cookies.auth.role.roleName === 'Customer') {
+      setMenuItems(CustomerSidebar);
+    } else if (cookies.auth.userProfile?.jobPosition?.jobPositionName === 'Admin') {
+      setMenuItems(AdminSidebar);
+    } else {
+      setMenuItems([]);
+    }
+  }, []);
 
   const SidebarContent = (
     <Box sx={{ p: 3, height: "calc(100vh - 40px)" }}>
@@ -42,7 +57,7 @@ const Sidebar = (props) => {
             mt: 4,
           }}
         >
-          {Menuitems.map((item, index) => {
+          {menuItems.map((item, index) => {
             //{/********SubHeader**********/}
 
             return (

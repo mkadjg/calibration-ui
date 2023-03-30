@@ -4,22 +4,17 @@ import {
   ConstructionOutlined
 } from "@material-ui/icons/";
 
-const CustomerSidebar = [
+const AdminSidebar = [
   {
     title: "Dashboard",
     icon: DashboardOutlined,
     href: "/dashboards/dashboard1",
   },
   {
-    title: "Peralatan",
-    icon: ConstructionOutlined,
-    href: "/equipment",
-  },
-  {
     title: "Kalibrasi",
     icon: DescriptionOutlined,
-    href: "/customer/calibration",
+    href: "/admin/calibration",
   },
 ];
 
-export default CustomerSidebar;
+export default AdminSidebar;
