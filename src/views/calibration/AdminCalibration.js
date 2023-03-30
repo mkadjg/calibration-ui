@@ -184,6 +184,33 @@ const AdminCalibration = () => {
       });
   };
 
+  const forwardCalibration = () => {
+    setLoading(true);
+    axios
+      .post(`${process.env.REACT_APP_BASE_URL}/calibration/forward/${id}`, confirm, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setSnackbar({
+            open: true,
+            severity: "success",
+            message: "Simpan data berhasil"
+          });
+          setLoading(false);
+          handleCloseConfirmModal();
+          getCalibrations();
+        }
+      })
+      .catch((error) => {
+        setSnackbar({
+          open: true,
+          severity: "success",
+          message: error.response?.data
+        });
+        setLoading(false);
+        handleCloseConfirmModal();
+      });
+  };
+
   const deleteEquipment = () => {
     axios
       .delete(`${process.env.REACT_APP_BASE_URL}/equipment/delete/${id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
