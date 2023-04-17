@@ -9,7 +9,7 @@ import FilterComponent from "../../components/filter/FIlterComponent";
 import Moment from "react-moment";
 import { Timeline, TimelineConnector, TimelineContent, TimelineDot, TimelineItem, TimelineOppositeContent, TimelineSeparator } from "@material-ui/lab";
 
-const CustomerCalibration = () => {
+const CustomerComplain = () => {
   // eslint-disable-next-line no-unused-vars
   const [cookies, setCookies] = useCookies({});
   const [calibrations, setCalibrations] = useState([]);
@@ -1052,4 +1052,4 @@ const CustomerCalibration = () => {
   );
 };
 
-export default CustomerCalibration;
+export default CustomerComplain;

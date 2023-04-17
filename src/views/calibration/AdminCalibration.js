@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { Card, CardContent, Box, Typography, Modal, Button, TextField, Divider, Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Autocomplete, Rating } from "@material-ui/core";
+import { Card, CardContent, Box, Typography, Modal, Button, TextField, Divider, Grid, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Autocomplete, Rating } from "@material-ui/core";
 
 import DataTable from "react-data-table-component";
 import axios from "axios";
@@ -18,7 +18,12 @@ const AdminCalibration = () => {
   const [filterText, setFilterText] = useState('');
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
   const [calibrationTrack, setCalibrationTrack] = useState([]);
+  const [performanceAssessment, setPerformanceAssessment] = useState({
+    performanceAssessmentNote: '',
+    rating: 0
+  });
   const [technicianAutocomplete, setTechnicianAutocomplete] = useState([]);
+  const [calibrationReport, setCalibrationReport] = useState([]);
   const filteredItems = calibrations.filter(
     (item) =>
       (item.equipment.equipmentName && item.equipment.equipmentName.toLowerCase().includes(filterText.toLowerCase())) ||
@@ -32,7 +37,6 @@ const AdminCalibration = () => {
   const [forwarModal, setForwardModal] = useState(false);
   const [detailModal, setDetailModal] = useState(false);
   const [trackModal, setTrackModal] = useState(false);
-  const [deleteDialog, setDeleteDialog] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     severity: "success",
@@ -43,7 +47,7 @@ const AdminCalibration = () => {
     orderNumber: ''
   });
   const [forward, setForward] = useState({
-    technicianId: ''
+    employeeId: ''
   });
   const [id, setId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -58,7 +62,7 @@ const AdminCalibration = () => {
   const handleAutocomplete = (e, v) => {
     setForward({
       ...forward,
-      technicianId: v.id
+      employeeId: v.id
     })
   }
 
@@ -85,6 +89,8 @@ const AdminCalibration = () => {
 
   const handleOpenDetailModal = (item) => {
     setItem(item);
+    getCalibrationReport(item);
+    getPerformanceAssessment(item.id);
     setDetailModal(true);
   }
 
@@ -101,18 +107,6 @@ const AdminCalibration = () => {
   const handleCloseTrackModal = () => {
     setItem({});
     setTrackModal(false);
-  }
-
-  // eslint-disable-next-line no-unused-vars
-  const handleOpenDeleteDialog = (id) => {
-    setId(id);
-    setDeleteDialog(true);
-  }
-
-  const handleCloseDeleteDialog = () => {
-    setId(null);
-    setDeleteDialog(false);
-    setSnackbar(true);
   }
 
   const handleCloseSnackbar = () => {
@@ -132,12 +126,40 @@ const AdminCalibration = () => {
       });
   };
 
+  const getCalibrationReport = (item) => {
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/calibration-report/${item.id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setCalibrationReport(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   const getCalibrationTrack = (id) => {
     axios
       .get(`${process.env.REACT_APP_BASE_URL}/calibration-track/find-by-calibration-id/${id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
           setCalibrationTrack(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const getPerformanceAssessment = (id) => {
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/performance-assessment/find-by-calibration-id/${id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          if (response.data.length > 0) {
+            setPerformanceAssessment(response.data[0]);
+          }
         }
       })
       .catch((error) => {
@@ -185,11 +207,10 @@ const AdminCalibration = () => {
       });
   };
 
-  // eslint-disable-next-line no-unused-vars
   const forwardCalibration = () => {
     setLoading(true);
     axios
-      .post(`${process.env.REACT_APP_BASE_URL}/calibration/forward/${id}`, confirm, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .post(`${process.env.REACT_APP_BASE_URL}/calibration/forward-to-technician/${id}`, forward, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
           setSnackbar({
@@ -198,39 +219,18 @@ const AdminCalibration = () => {
             message: "Simpan data berhasil"
           });
           setLoading(false);
-          handleCloseConfirmModal();
+          handleCloseForwardModal();
           getCalibrations();
         }
       })
       .catch((error) => {
         setSnackbar({
           open: true,
-          severity: "success",
-          message: error.response?.data
+          severity: "error",
+          message: "Terjadi kesalahan!"
         });
         setLoading(false);
-        handleCloseConfirmModal();
-      });
-  };
-
-  const deleteEquipment = () => {
-    axios
-      .delete(`${process.env.REACT_APP_BASE_URL}/equipment/delete/${id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
-      .then((response) => {
-        if (response.status === 200) {
-          setSnackbar({
-            open: true,
-            severity: "success",
-            message: response.data
-          });
-        }
-      })
-      .catch((error) => {
-        setSnackbar({
-          open: true,
-          severity: "success",
-          message: error.response?.data
-        });
+        handleCloseForwardModal();
       });
   };
 
@@ -264,7 +264,7 @@ const AdminCalibration = () => {
     },
     {
       name: 'Status',
-      selector: row => row.calibrationStatus.calibrationStatusCode,
+      selector: row => row.calibrationStatus.calibrationStatusName,
       wrap: true,
       sortable: true
     },
@@ -519,7 +519,7 @@ const AdminCalibration = () => {
                 disablePortal
                 id="combo-box-demo"
                 options={technicianAutocomplete}
-                name="technicianId"
+                name="employeeId"
                 onChange={handleAutocomplete}
                 fullWidth
                 renderInput={(params) => <TextField
@@ -531,7 +531,7 @@ const AdminCalibration = () => {
                 }}
               />
               <div>
-                <Button onClick={confirmCalibration}
+                <Button onClick={forwardCalibration}
                   fullWidth color="primary"
                   size="large" variant="contained"
                   disabled={loading}>
@@ -751,18 +751,53 @@ const AdminCalibration = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      <TableRow>
-                        <TableCell align="center">0</TableCell>
-                        <TableCell align="center">0</TableCell>
-                        <TableCell align="center">0</TableCell>
-                        <TableCell align="center">0</TableCell>
-                        <TableCell align="center">0</TableCell>
-                      </TableRow>
+                      {
+                        calibrationReport.map((body, index) => (
+                          <TableRow key={body.id}>
+                            <TableCell align="center">{body.instrumentIndication}</TableCell>
+                            <TableCell align="center">{body.standardIndicationUp}</TableCell>
+                            <TableCell align="center">{body.standardIndicationDown}</TableCell>
+                            <TableCell align="center">{body.correctionUp}</TableCell>
+                            <TableCell align="center">{body.correctionDown}</TableCell>
+                          </TableRow>
+                        ))
+                      }
                     </TableBody>
                   </Table>
                 </TableContainer>
               </CardContent>
             </Card>
+
+            <Grid container>
+              <Grid item md={4}>
+                <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                  <ListItem>
+                    <ListItemText primary="Uncertainly"
+                      secondary={item.uncertainly != null ? item.uncertainly : '-'} />
+                  </ListItem>
+                </List>
+              </Grid>
+
+              <Grid item md={4}>
+                <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                  <ListItem>
+                    <ListItemText primary="Confidence Level"
+                      secondary={item.confidenceLevel != null ? item.confidenceLevel : '-'} />
+                  </ListItem>
+                </List>
+              </Grid>
+
+              <Grid item md={4}>
+                <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                  <ListItem>
+                    <ListItemText primary="Coverage Factor"
+                      secondary={item.coverageFactor != null ? item.coverageFactor : '-'} />
+                  </ListItem>
+                </List>
+              </Grid>
+            </Grid>
+
+            <Divider />
 
             <Grid container>
               <Grid item md={4}>
@@ -808,7 +843,7 @@ const AdminCalibration = () => {
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
                     <ListItemText primary="Penilaian :" />
-                    <Rating name="size-large" defaultValue={5} readOnly size="large" />
+                    <Rating name="size-large" value={performanceAssessment.rating} readOnly size="large" />
                   </ListItem>
                 </List>
               </Grid>
@@ -816,7 +851,7 @@ const AdminCalibration = () => {
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
                     <ListItemText primary="Catatan Pelanggan"
-                      secondary={item.standardSerialNumber ? item.standardSerialNumber : '-'} />
+                      secondary={performanceAssessment.performanceAssessmentNote ? performanceAssessment.performanceAssessmentNote : '-'} />
                   </ListItem>
                 </List>
               </Grid>
@@ -839,6 +874,8 @@ const AdminCalibration = () => {
         >
           <CardContent
             sx={{
+              maxHeight: 600,
+              overflow: 'auto',
               pb: "0 !important",
             }}
           >
@@ -878,7 +915,7 @@ const AdminCalibration = () => {
               }}
             >
               {calibrationTrack.map((calibrationTrack) => (
-                <TimelineItem key={calibrationTrack.trackDate}>
+                <TimelineItem key={calibrationTrack.id}>
                   <TimelineOppositeContent
                     sx={{
                       fontSize: "12px",
@@ -909,28 +946,6 @@ const AdminCalibration = () => {
           </CardContent>
         </Card>
       </Modal>
-
-      <Dialog
-        open={deleteDialog}
-        onClose={handleCloseDeleteDialog}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle fontSize={16} id="alert-dialog-title">
-          Konfirmasi hapus data peralatan
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            {`Anda yakin mau menghapus peralatan ini ?`}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog}>No</Button>
-          <Button onClick={deleteEquipment} autoFocus>
-            Yes
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       <Snackbar open={snackbar.open}
         autoHideDuration={5000}

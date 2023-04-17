@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
 
-import { Card, CardContent, Box, Typography, Modal, Button, TextField, Divider, Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Autocomplete, Rating } from "@material-ui/core";
+import { Card, CardContent, Box, Typography, Modal, Button, TextField, Divider, Grid, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Rating, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@material-ui/core";
 
 import DataTable from "react-data-table-component";
 import axios from "axios";
 import { useCookies } from "react-cookie";
 import FilterComponent from "../../components/filter/FIlterComponent";
 import Moment from "react-moment";
-import { Timeline, TimelineConnector, TimelineContent, TimelineDot, TimelineItem, TimelineOppositeContent, TimelineSeparator } from "@material-ui/lab";
 
-const CustomerCalibration = () => {
+const TypewriterCalibration = () => {
   // eslint-disable-next-line no-unused-vars
   const [cookies, setCookies] = useCookies({});
   const [calibrations, setCalibrations] = useState([]);
@@ -17,13 +16,11 @@ const CustomerCalibration = () => {
   // filter
   const [filterText, setFilterText] = useState('');
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
-  const [calibrationTrack, setCalibrationTrack] = useState([]);
+  const [calibrationReport, setCalibrationReport] = useState([]);
   const [performanceAssessment, setPerformanceAssessment] = useState({
     performanceAssessmentNote: '',
     rating: 0
   });
-  const [equipmentAutocomplete, setEquipmentAutocomplete] = useState([]);
-  const [calibrationReport, setCalibrationReport] = useState([]);
   const filteredItems = calibrations.filter(
     (item) =>
       (item.equipment.equipmentName && item.equipment.equipmentName.toLowerCase().includes(filterText.toLowerCase())) ||
@@ -33,65 +30,66 @@ const CustomerCalibration = () => {
   );
 
   // modal
-  const [createModal, setCreateModal] = useState(false);
+  const [resultModal, setResultModal] = useState(false);
   const [detailModal, setDetailModal] = useState(false);
-  const [trackModal, setTrackModal] = useState(false);
-  const [assessmentModal, setAssessmentModal] = useState(false);
-  const [finishDialog, setFinishDialog] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState(false);
+  const [forwardDialog, setForwardDialog] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     severity: "success",
     message: ""
   });
   const [item, setItem] = useState({});
-  const [body, setBody] = useState({
-    equipmentId: 0,
-    calibrationNote: ''
-  });
-  const [assessment, setAssessment] = useState({
-    performanceAssessmentNote: '',
-    rating: 0
+  const [certificate, setCertificate] = useState({
+    certificateNumber: '',
+    calibrationLocation: '',
+    calibrationMethod: '',
+    envConditionTBefore: 0,
+    envConditionTAfter: 0,
+    envConditionRhBefore: 0,
+    envConditionRhAfter: 0,
+    standardName: '',
+    standardType: '',
+    standardSerialNumber: '',
+    standardTraceableToSI: '',
+    issuanceDate: new Date().toISOString().split('T')[0]
   });
   const [id, setId] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const handleCreateChange = (e) => {
-    setBody({
-      ...body,
+  const handleCertificateChange = (e) => {
+    setCertificate({
+      ...certificate,
       [e.target.name]: e.target.value
     })
   }
 
-  const handleAssessmentChange = (e) => {
-    setAssessment({
-      ...assessment,
-      [e.target.name]: e.target.value
-    })
+  const handleOpenResultModal = (item) => {
+    setId(item.id)
+    setResultModal(true);
   }
 
-  const handleAutocomplete = (e, v) => {
-    setBody({
-      ...body,
-      equipmentId: v.id
-    })
+  const handleCloseResultModal = () => {
+    setItem({});
+    setResultModal(false);
   }
 
-  const handleOpenCreateModal = () => {
-    getEquipmentAutocomplete();
-    setCreateModal(true);
-  }
-
-  const handleCloseCreateModal = () => {
-    setCreateModal(false);
-  }
-
-  const handleOpenAssessmentModal = (id) => {
+  const handleOpenConfirmDialog = (id) => {
     setId(id);
-    setAssessmentModal(true);
+    setConfirmDialog(true);
   }
 
-  const handleCloseAssessmentModal = () => {
-    setAssessmentModal(false);
+  const handleCloseConfirmDialog = () => {
+    setConfirmDialog(false);
+  }
+
+  const handleOpenForwardDialog = (id) => {
+    setId(id);
+    setForwardDialog(true);
+  }
+
+  const handleCloseForwardDialog = () => {
+    setForwardDialog(false);
   }
 
   const handleOpenDetailModal = (item) => {
@@ -106,34 +104,13 @@ const CustomerCalibration = () => {
     setDetailModal(false);
   }
 
-  const handleOpenTrackModal = (id) => {
-    getCalibrationTrack(id);
-    setTrackModal(true);
-  }
-
-  const handleCloseTrackModal = () => {
-    setCalibrationTrack([]);
-    setTrackModal(false);
-  }
-
-  const handleOpenFinishDialog = (id) => {
-    setId(id);
-    setFinishDialog(true);
-  }
-
-  const handleCloseFinishDialog = () => {
-    setId(null);
-    setFinishDialog(false);
-    setSnackbar(true);
-  }
-
   const handleCloseSnackbar = () => {
     setSnackbar(false);
   }
 
   const getCalibrations = () => {
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/calibration/find-by-customer-id/${cookies.auth.userProfile.id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .get(`${process.env.REACT_APP_BASE_URL}/calibration/find-by-typewriter-id/${cookies.auth.userProfile.id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
           setCalibrations(response.data);
@@ -141,62 +118,6 @@ const CustomerCalibration = () => {
       })
       .catch((error) => {
         console.log(error);
-      });
-  };
-
-  const createCalibration = (e) => {
-    e.preventDefault();
-    setLoading(true);
-    axios
-      .post(`${process.env.REACT_APP_BASE_URL}/calibration`, body, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
-      .then((response) => {
-        if (response.status === 201) {
-          setSnackbar({
-            open: true,
-            severity: "success",
-            message: "Simpan data berhasil"
-          });
-          setLoading(false);
-          handleCloseCreateModal();
-          getCalibrations();
-        }
-      })
-      .catch((error) => {
-        setSnackbar({
-          open: true,
-          severity: "error",
-          message: error.response?.data
-        });
-        setLoading(false);
-        handleCloseCreateModal();
-      });
-  };
-
-  const assessmentCalibration = (e) => {
-    e.preventDefault();
-    setLoading(true);
-    axios
-      .post(`${process.env.REACT_APP_BASE_URL}/performance-assessment/${id}`, assessment, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
-      .then((response) => {
-        if (response.status === 201) {
-          setSnackbar({
-            open: true,
-            severity: "success",
-            message: "Simpan data berhasil"
-          });
-          setLoading(false);
-          handleCloseAssessmentModal();
-          getCalibrations();
-        }
-      })
-      .catch((error) => {
-        setSnackbar({
-          open: true,
-          severity: "error",
-          message: error.response?.data
-        });
-        setLoading(false);
-        handleCloseAssessmentModal();
       });
   };
 
@@ -213,16 +134,84 @@ const CustomerCalibration = () => {
       });
   };
 
-  const getCalibrationTrack = (id) => {
+  const confirmCalibration = () => {
+    setLoading(true);
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/calibration-track/find-by-calibration-id/${id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .post(`${process.env.REACT_APP_BASE_URL}/calibration/confirm-by-typewriter/${id}`, null, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
-          setCalibrationTrack(response.data);
+          setSnackbar({
+            open: true,
+            severity: "success",
+            message: "Simpan data berhasil"
+          });
+          setLoading(false);
+          handleCloseConfirmDialog();
+          getCalibrations();
         }
       })
       .catch((error) => {
-        console.log(error);
+        setSnackbar({
+          open: true,
+          severity: "success",
+          message: error.response?.data
+        });
+        setLoading(false);
+        handleCloseConfirmDialog();
+      });
+  };
+
+  const createCertificateCalibration = () => {
+    setLoading(true);
+    axios
+      .post(`${process.env.REACT_APP_BASE_URL}/certificate/${id}`, certificate, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setSnackbar({
+            open: true,
+            severity: "success",
+            message: "Simpan data berhasil"
+          });
+          setLoading(false);
+          handleCloseResultModal();
+          getCalibrations();
+        }
+      })
+      .catch((error) => {
+        setSnackbar({
+          open: true,
+          severity: "success",
+          message: error.response?.data
+        });
+        setLoading(false);
+        handleCloseResultModal();
+      });
+  };
+
+  const forwardCalibration = () => {
+    setLoading(true);
+    axios
+      .post(`${process.env.REACT_APP_BASE_URL}/calibration/forward-to-customer/${id}`, null,{ headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setSnackbar({
+            open: true,
+            severity: "success",
+            message: "Simpan data berhasil"
+          });
+          setLoading(false);
+          handleCloseForwardDialog();
+          getCalibrations();
+        }
+      })
+      .catch((error) => {
+        setSnackbar({
+          open: true,
+          severity: "error",
+          message: "Terjadi kesalahan!"
+        });
+        setLoading(false);
+        handleCloseForwardDialog();
       });
   };
 
@@ -238,44 +227,6 @@ const CustomerCalibration = () => {
       })
       .catch((error) => {
         console.log(error);
-      });
-  };
-
-  const getEquipmentAutocomplete = (id) => {
-    axios
-      .get(`${process.env.REACT_APP_BASE_URL}/equipment/autocomplete/${cookies.auth.userProfile.id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
-      .then((response) => {
-        if (response.status === 200) {
-          setEquipmentAutocomplete(response.data);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const finishCalibration = () => {
-    axios
-      .post(`${process.env.REACT_APP_BASE_URL}/calibration/finish-by-customer/${id}`, null, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
-      .then((response) => {
-        if (response.status === 200) {
-          setSnackbar({
-            open: true,
-            severity: "success",
-            message: "Simpan data berhasil"
-          });
-        }
-        getCalibrations();
-        handleCloseFinishDialog();
-      })
-      .catch((error) => {
-        setSnackbar({
-          open: true,
-          severity: "success",
-          message: error.response?.data
-        });
-        getCalibrations();
-        handleCloseFinishDialog();
       });
   };
 
@@ -318,35 +269,36 @@ const CustomerCalibration = () => {
       selector: row => (
         <>
           <Button size="small" style={{ margin: '6px 3px 3px 0px' }}
+            onClick={() => handleOpenConfirmDialog(row.id)}
+            variant="contained"
+            disabled={row.calibrationStatus.calibrationStatusCode !== 'FORWARD_TO_CERTIFICATE'}
+            color="success">
+            Konfirmasi
+          </Button>
+          <Button size="small" style={{ margin: '6px 3px 3px 3px' }}
+            onClick={() => handleOpenResultModal(row)}
+            variant="contained"
+            disabled={row.calibrationStatus.calibrationStatusCode !== 'IN_PROGRESS_BY_CERTIFICATE'}
+            color="info">
+            Catat
+          </Button>
+          <br />
+          <Button size="small" style={{ margin: '3px 3px 6px 0px' }}
             onClick={() => handleOpenDetailModal(row)}
             variant="contained"
             color="secondary">
             Detail
           </Button>
-          <Button size="small" style={{ margin: '6px 6px 3px 3px' }}
-            onClick={() => handleOpenTrackModal(row.id)}
+          <Button size="small" style={{ margin: '3px 3px 6px 3px' }}
+            onClick={() => handleOpenForwardDialog(row.id)}
             variant="contained"
-            color="info">
-            Lacak
-          </Button>
-          <br />
-          <Button size="small" style={{ margin: '3px 3px 6px 0px' }}
-            onClick={() => handleOpenFinishDialog(row.id)}
-            variant="contained"
-            disabled={row.calibrationStatus.calibrationStatusCode !== 'FORWARD_TO_CUSTOMER'}
-            color="success">
-            Selesai
-          </Button>
-          <Button size="small" style={{ margin: '3px 6px 6px 3px' }}
-            onClick={() => handleOpenAssessmentModal(row.id)}
-            variant="contained"
-            disabled={!(row.calibrationStatus.calibrationStatusCode === 'FINISHED' && !row.isAssessed)}
+            disabled={row.calibrationStatus.calibrationStatusCode !== 'DONE_BY_CERTIFICATE'}
             color="warning">
-            Nilai
+            Teruskan
           </Button>
         </>
       ),
-      width: '180px'
+      width: '200px'
     },
 
   ];
@@ -404,17 +356,6 @@ const CustomerCalibration = () => {
     );
   };
 
-  const modalPosition = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '50%',
-    bgcolor: 'background.paper',
-    boxShadow: 24,
-    p: 4
-  };
-
   const modalDetailPosition = {
     position: 'absolute',
     top: '50%',
@@ -434,9 +375,6 @@ const CustomerCalibration = () => {
             <Grid container>
               <Grid item sm={8} md={10} lg={10}>
                 <Typography variant="h3">Daftar Kalibrasi</Typography>
-              </Grid>
-              <Grid item sm={4} md={2} lg={2} style={{ paddingRight: '15px' }}>
-                <Button fullWidth variant="contained" color="primary" onClick={handleOpenCreateModal}>Tambah</Button>
               </Grid>
             </Grid>
 
@@ -466,15 +404,15 @@ const CustomerCalibration = () => {
       </Box>
 
       <Modal
-        open={createModal}
-        onClose={handleCloseCreateModal}
+        open={resultModal}
+        onClose={handleCloseResultModal}
       >
         <Card
           variant="outlined"
           sx={{
             p: 0,
           }}
-          style={modalPosition}
+          style={modalDetailPosition}
         >
           <Box
             sx={{
@@ -490,7 +428,7 @@ const CustomerCalibration = () => {
                   fontWeight: "500",
                 }}
               >
-                Tambah Kalibrasi
+                Pencatatan Sertifikat Kalibrasi
               </Typography>
             </Box>
           </Box>
@@ -501,37 +439,188 @@ const CustomerCalibration = () => {
             }}
           >
             <form>
-              <Autocomplete
-                disablePortal
-                id="combo-box-demo"
-                options={equipmentAutocomplete}
-                name="equipmentId"
-                onChange={handleAutocomplete}
-                fullWidth
-                renderInput={(params) => <TextField
-                  {...params}
-                  label="Pilih Peralatan"
-                  placeholder="Pilih Peralatan" />}
-                sx={{
-                  mb: 2,
-                }}
-              />
-              <TextField
-                id="outlined-multiline-static"
-                label="Catatan Kalibrasi"
-                multiline
-                rows={4}
-                variant="outlined"
-                fullWidth
-                name="calibrationNote"
-                value={body.calibrationNote}
-                onChange={handleCreateChange}
-                sx={{
-                  mb: 2,
-                }}
-              />
+              <Grid container spacing={2}>
+                <Grid item sm={6} md={6} lg={6}>
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Sertifikat Kalibrasi"
+                    placeholder="Sertifikat Kalibrasi"
+                    rows={4}
+                    variant="outlined"
+                    type="text"
+                    fullWidth
+                    name="certificateNumber"
+                    value={certificate.certificateNumber}
+                    onChange={handleCertificateChange}
+                    sx={{ mb: 2 }}
+                  />
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Metode Kalibrasi"
+                    placeholder="Metode Kalibrasi"
+                    rows={4}
+                    variant="outlined"
+                    type="text"
+                    fullWidth
+                    name="calibrationMethod"
+                    value={certificate.calibrationMethod}
+                    onChange={handleCertificateChange}
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+                <Grid item sm={6} md={6} lg={6}>
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Lokasi Kalibrasi"
+                    placeholder="Lokasi Kalibrasi"
+                    rows={4}
+                    variant="outlined"
+                    type="text"
+                    fullWidth
+                    name="calibrationLocation"
+                    value={certificate.calibrationLocation}
+                    onChange={handleCertificateChange}
+                    sx={{ mb: 2 }}
+                  />
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Tanggal Penerbitan"
+                    rows={4}
+                    variant="outlined"
+                    type="date"
+                    fullWidth
+                    name="issuanceDate"
+                    value={certificate.issuanceDate}
+                    onChange={handleCertificateChange}
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+              </Grid>
+
+              <Divider sx={{ mt: '10px', mb: '25px' }}/>
+
+              <Grid container spacing={2}>
+                <Grid item sm={6} md={6} lg={6}>
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Kondisi T sebelum"
+                    placeholder="Kondisi T sebelum"
+                    rows={4}
+                    variant="outlined"
+                    type="number"
+                    fullWidth
+                    name="envConditionTBefore"
+                    value={certificate.envConditionTBefore}
+                    onChange={handleCertificateChange}
+                    sx={{ mb: 2 }}
+                  />
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Kondisi T setelah"
+                    placeholder="Kondisi T setelah"
+                    rows={4}
+                    variant="outlined"
+                    type="number"
+                    fullWidth
+                    name="envConditionTAfter"
+                    value={certificate.envConditionTAfter}
+                    onChange={handleCertificateChange}
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+                <Grid item sm={6} md={6} lg={6}>
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Kondisi RH sebelum"
+                    placeholder="Kondisi RH sebelum"
+                    rows={4}
+                    variant="outlined"
+                    type="number"
+                    fullWidth
+                    name="envConditionRhBefore"
+                    value={certificate.envConditionRhBefore}
+                    onChange={handleCertificateChange}
+                    sx={{ mb: 2 }}
+                  />
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Kondisi RH setelah"
+                    placeholder="Kondisi RH setelah"
+                    rows={4}
+                    variant="outlined"
+                    type="number"
+                    fullWidth
+                    name="envConditionRhAfter"
+                    value={certificate.envConditionRhAfter}
+                    onChange={handleCertificateChange}
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+              </Grid>
+
+              <Divider sx={{ mt: '10px', mb: '25px' }}/>
+
+              <Grid container spacing={2}>
+                <Grid item sm={6} md={6} lg={6}>
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Nama Standar Kalibrasi"
+                    placeholder="Nama Standar Kalibrasi"
+                    rows={4}
+                    variant="outlined"
+                    type="text"
+                    fullWidth
+                    name="standardName"
+                    value={certificate.standardName}
+                    onChange={handleCertificateChange}
+                    sx={{ mb: 2 }}
+                  />
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Metode / Type Standar Kalibrasi"
+                    placeholder="Metode / Type Standar Kalibrasi"
+                    rows={4}
+                    variant="outlined"
+                    type="text"
+                    fullWidth
+                    name="standardType"
+                    value={certificate.standardType}
+                    onChange={handleCertificateChange}
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+                <Grid item sm={6} md={6} lg={6}>
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Nomor Seri Kalibrasi"
+                    placeholder="Nomor Seri Kalibrasi"
+                    rows={4}
+                    variant="outlined"
+                    type="text"
+                    fullWidth
+                    name="standardSerialNumber"
+                    value={certificate.standardSerialNumber}
+                    onChange={handleCertificateChange}
+                    sx={{ mb: 2 }}
+                  />
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Traceable Throudh SI"
+                    placeholder="Traceable Throudh SI"
+                    rows={4}
+                    variant="outlined"
+                    type="text"
+                    fullWidth
+                    name="standardTraceableToSI"
+                    value={certificate.standardTraceableToSI}
+                    onChange={handleCertificateChange}
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+              </Grid>
+
               <div>
-                <Button onClick={createCalibration}
+                <Button onClick={createCertificateCalibration}
                   fullWidth color="primary"
                   size="large" variant="contained"
                   disabled={loading}>
@@ -694,11 +783,11 @@ const CustomerCalibration = () => {
                       secondary={item.calibrationLocation ? item.calibrationLocation : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi T sebelum"
+                    <ListItemText primary={`Kondisi T sebelum (` + String.fromCharCode(176) + `c)`}
                       secondary={item.envConditionTBefore ? item.envConditionTBefore : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi RH sebelum"
+                    <ListItemText primary="Kondisi RH sebelum (%)"
                       secondary={item.envConditionRhBefore ? item.envConditionRhBefore : '-'} />
                   </ListItem>
                 </List>
@@ -711,11 +800,11 @@ const CustomerCalibration = () => {
                       secondary={item.calibrationMethod ? item.calibrationMethod : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi T setelah"
+                    <ListItemText primary={`Kondisi T setelah (` + String.fromCharCode(176) + `c)`}
                       secondary={item.envConditionTAfter ? item.envConditionTAfter : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi RH setelah"
+                    <ListItemText primary="Kondisi RH setelah (%)"
                       secondary={item.envConditionRhAfter ? item.envConditionRhAfter : '-'} />
                   </ListItem>
                 </List>
@@ -821,7 +910,7 @@ const CustomerCalibration = () => {
                   </ListItem>
                   <ListItem>
                     <ListItemText primary="Tanggal Penerbitan"
-                      secondary={item.issuenceDate ? <Moment format="YYYY-MM-DD">{item.issuenceDate}</Moment> : '-'} />
+                      secondary={item.issuanceDate ? <Moment format="YYYY-MM-DD">{item.issuanceDate}</Moment> : '-'} />
                   </ListItem>
                 </List>
               </Grid>
@@ -851,7 +940,7 @@ const CustomerCalibration = () => {
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
                     <ListItemText primary="Catatan Pelanggan"
-                      secondary={performanceAssessment.performanceAssessmentNote ? performanceAssessment.performanceAssessmentNote : '-'} />
+                      secondary={performanceAssessment.performanceAssessmentNote ? item.performanceAssessmentNote : '-'} />
                   </ListItem>
                 </List>
               </Grid>
@@ -861,166 +950,31 @@ const CustomerCalibration = () => {
         </Card>
       </Modal>
 
-      <Modal
-        open={trackModal}
-        onClose={handleCloseTrackModal}
+      <Dialog
+        open={confirmDialog}
+        onClose={handleCloseConfirmDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
       >
-        <Card
-          variant="outlined"
-          sx={{
-            maxHeight: 600,
-            overflow: 'auto',
-            pb: 0,
-          }}
-          style={modalPosition}
-        >
-          <CardContent
-            sx={{
-              pb: "0 !important",
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "flex-start",
-                mb: 5,
-              }}
-            >
-              <Box>
-                <Typography
-                  sx={{
-                    fontWeight: "500",
-                    fontSize: "h3.fontSize",
-                    marginBottom: "0",
-                  }}
-                  gutterBottom
-                >
-                  Lacak Kalibrasi
-                </Typography>
-                <Typography
-                  color="textSecondary"
-                  variant="body1"
-                  sx={{
-                    fontWeight: "400",
-                    fontSize: "13px",
-                  }}
-                >
-                  Informasi status terkini proses kalibrasi
-                </Typography>
-              </Box>
-            </Box>
-            <Timeline
-              sx={{
-                p: 0,
-              }}
-            >
-              {calibrationTrack.map((calibrationTrack) => (
-                <TimelineItem key={calibrationTrack.trackDate}>
-                  <TimelineOppositeContent
-                    sx={{
-                      fontSize: "12px",
-                      fontWeight: "700",
-                      flex: "0 100px"
-                    }}
-                  >
-                    {<Moment format="dddd, YYYY-MM-DD">{calibrationTrack.trackDate}</Moment>}
-                  </TimelineOppositeContent>
-                  <TimelineSeparator>
-                    <TimelineDot
-                      variant="outlined"
-                      color="success"
-                    />
-                    <TimelineConnector />
-                  </TimelineSeparator>
-                  <TimelineContent
-                    color="text.secondary"
-                    sx={{
-                      fontSize: "14px",
-                    }}
-                  >
-                    {calibrationTrack.calibrationStatus?.calibrationStatusCode} - {calibrationTrack.calibrationStatus?.calibrationStatusName}
-                  </TimelineContent>
-                </TimelineItem>
-              ))}
-            </Timeline>
-          </CardContent>
-        </Card>
-      </Modal>
-
-      <Modal
-        open={assessmentModal}
-        onClose={handleCloseAssessmentModal}
-      >
-        <Card
-          variant="outlined"
-          sx={{
-            p: 0,
-          }}
-          style={modalPosition}
-        >
-          <Box
-            sx={{
-              padding: "15px 30px",
-            }}
-            display="flex"
-            alignItems="center"
-          >
-            <Box flexGrow={1}>
-              <Typography
-                sx={{
-                  fontSize: "18px",
-                  fontWeight: "500",
-                }}
-              >
-                Penilaian Kalibrasi
-              </Typography>
-            </Box>
-          </Box>
-          <Divider />
-          <CardContent
-            sx={{
-              padding: "20px",
-            }}
-          >
-            <form>
-              <Rating sx={{ fontSize: '45px' }} 
-                name="rating" 
-                onChange={handleAssessmentChange}
-                alue={assessment.rating} 
-                size="large" 
-              />
-              <br/>
-              <br/>
-              <TextField
-                id="outlined-multiline-static"
-                label="Komentar"
-                multiline
-                rows={4}
-                variant="outlined"
-                fullWidth
-                name="performanceAssessmentNote"
-                value={assessment.performanceAssessmentNote}
-                onChange={handleAssessmentChange}
-                sx={{
-                  mb: 2,
-                }}
-              />
-              <div>
-                <Button onClick={assessmentCalibration}
-                  fullWidth color="primary"
-                  size="large" variant="contained"
-                  disabled={loading}>
-                  {loading ? <CircularProgress size={26} color="inherit" /> : "Simpan"}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </Modal>
+        <DialogTitle fontSize={16} id="alert-dialog-title">
+          Konfirmasi mulai pencatatan sertifikat kalibrasi
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {`Anda yakin mau memulai pencatatan sertifikat kalibrasi ?`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseConfirmDialog}>No</Button>
+          <Button onClick={confirmCalibration} autoFocus>
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog
-        open={finishDialog}
-        onClose={handleCloseFinishDialog}
+        open={forwardDialog}
+        onClose={handleCloseConfirmDialog}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
@@ -1029,12 +983,12 @@ const CustomerCalibration = () => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            {`Anda yakin mau menyelesaikan proses kalibrasi ini ?`}
+            {`Anda yakin mau meneruskan proses kalibrasi kepada pelanggan ?`}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseFinishDialog}>No</Button>
-          <Button onClick={finishCalibration} autoFocus>
+          <Button onClick={handleCloseForwardDialog}>No</Button>
+          <Button onClick={forwardCalibration} autoFocus>
             Yes
           </Button>
         </DialogActions>
@@ -1052,4 +1006,4 @@ const CustomerCalibration = () => {
   );
 };
 
-export default CustomerCalibration;
+export default TypewriterCalibration;

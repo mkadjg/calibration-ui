@@ -1,6 +1,7 @@
 import {
   DashboardOutlined,
   DescriptionOutlined,
+  AssignmentReturnOutlined,
   ConstructionOutlined
 } from "@material-ui/icons/";
 
@@ -19,6 +20,11 @@ const CustomerSidebar = [
     title: "Kalibrasi",
     icon: DescriptionOutlined,
     href: "/customer/calibration",
+  },
+  {
+    title: "Aduan",
+    icon: AssignmentReturnOutlined,
+    href: "/customer/complain",
   },
 ];
 

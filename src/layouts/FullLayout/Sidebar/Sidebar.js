@@ -15,6 +15,8 @@ import LogoIcon from "../Logo/LogoIcon";
 import CustomerSidebar from "./CustomerSidebar";
 import AdminSidebar from "./AdminSidebar";
 import { useCookies } from "react-cookie";
+import TechnicianSidebar from "./TechnicianSidebar";
+import TypewriterSidebar from "./TypewriterSidebar";
 
 const Sidebar = (props) => {
   const [open, setOpen] = React.useState(true);
@@ -38,6 +40,10 @@ const Sidebar = (props) => {
       setMenuItems(CustomerSidebar);
     } else if (cookies.auth.userProfile?.jobPosition?.jobPositionName === 'Admin') {
       setMenuItems(AdminSidebar);
+    } else if (cookies.auth.userProfile?.jobPosition?.jobPositionName === 'Technician') {
+      setMenuItems(TechnicianSidebar);
+    } else if (cookies.auth.userProfile?.jobPosition?.jobPositionName === 'Certificate') {
+      setMenuItems(TypewriterSidebar);
     } else {
       setMenuItems([]);
     }
