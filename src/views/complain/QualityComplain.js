@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { Card, CardContent, Box, Typography, Modal, Button, TextField, Divider, Grid, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Autocomplete, Rating } from "@material-ui/core";
+import { Card, CardContent, Box, Typography, Modal, Button, TextField, Divider, Grid, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Autocomplete, Rating, MenuItem } from "@material-ui/core";
 
 import DataTable from "react-data-table-component";
 import axios from "axios";
@@ -9,32 +9,31 @@ import FilterComponent from "../../components/filter/FIlterComponent";
 import Moment from "react-moment";
 import { Timeline, TimelineConnector, TimelineContent, TimelineDot, TimelineItem, TimelineOppositeContent, TimelineSeparator } from "@material-ui/lab";
 
-const AdminComplain = () => {
+const QualityComplain = () => {
   // eslint-disable-next-line no-unused-vars
   const [cookies, setCookies] = useCookies({});
-  const [calibrations, setCalibrations] = useState([]);
+  const [complains, setComplains] = useState([]);
 
   // filter
   const [filterText, setFilterText] = useState('');
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
-  const [calibrationTrack, setCalibrationTrack] = useState([]);
+  const [complainTrack, setComplainTrack] = useState([]);
   const [performanceAssessment, setPerformanceAssessment] = useState({
     performanceAssessmentNote: '',
     rating: 0
   });
   const [technicianAutocomplete, setTechnicianAutocomplete] = useState([]);
+  const [typewriterAutocomplete, setTypewriterAutocomplete] = useState([]);
   const [calibrationReport, setCalibrationReport] = useState([]);
-  const filteredItems = calibrations.filter(
+  const filteredItems = complains.filter(
     (item) =>
-      (item.equipment.equipmentName && item.equipment.equipmentName.toLowerCase().includes(filterText.toLowerCase())) ||
-      (item.calibrationDate && item.calibrationDate.toString().toLowerCase().includes(filterText.toLowerCase())) ||
-      (item.receivedDate && item.receivedDate.toString().toLowerCase().includes(filterText.toLowerCase())) ||
-      (item.calibrationStatus.calibrationStatusCode && item.calibrationStatus.calibrationStatusCode.toLowerCase().includes(filterText.toLowerCase()))
+      (item.calibration.equipment.equipmentName && item.calibration.equipment.equipmentName.toLowerCase().includes(filterText.toLowerCase())) ||
+      (item.complainStatus.complainStatusName && item.complainStatus.complainStatusName.toLowerCase().includes(filterText.toLowerCase()))
   );
 
   // modal
   const [confirmModal, setConfirmModal] = useState(false);
-  const [forwarModal, setForwardModal] = useState(false);
+  const [forwardModal, setForwardModal] = useState(false);
   const [detailModal, setDetailModal] = useState(false);
   const [trackModal, setTrackModal] = useState(false);
   const [snackbar, setSnackbar] = useState({
@@ -42,15 +41,28 @@ const AdminComplain = () => {
     severity: "success",
     message: ""
   });
+  const [complain, setComplain] = useState({});
   const [item, setItem] = useState({});
   const [confirm, setConfirm] = useState({
-    orderNumber: ''
+    complainNumber: ''
   });
   const [forward, setForward] = useState({
+    forwardTypeId: 1,
     employeeId: ''
   });
   const [id, setId] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const forwardType = [
+    {
+      id: 1,
+      label: 'Tekhnisi'
+    },
+    {
+      id: 2,
+      label: 'Sertifikat'
+    }
+  ]
 
   const handleConfirmChange = (e) => {
     setConfirm({
@@ -66,6 +78,13 @@ const AdminComplain = () => {
     })
   }
 
+  const handleForwardChange = (e) => {
+    setForward({
+      ...forward,
+      [e.target.name]: e.target.value
+    });
+  }
+
   const handleOpenConfirmModal = (id) => {
     setId(id);
     setConfirmModal(true);
@@ -79,6 +98,7 @@ const AdminComplain = () => {
   const handleOpenForwardModal = (id) => {
     setId(id);
     getTechnicianAutocomplete();
+    getTypewriterAutocomplete();
     setForwardModal(true);
   }
 
@@ -88,24 +108,26 @@ const AdminComplain = () => {
   }
 
   const handleOpenDetailModal = (item) => {
-    setItem(item);
-    getCalibrationReport(item);
-    getPerformanceAssessment(item.id);
+    setComplain(item);
+    setItem(item.calibration);
+    getCalibrationReport(item.calibration.id);
+    getPerformanceAssessment(item.calibration.id);
     setDetailModal(true);
   }
 
   const handleCloseDetailModal = () => {
+    setComplain({});
     setItem({});
     setDetailModal(false);
   }
 
   const handleOpenTrackModal = (id) => {
-    getCalibrationTrack(id);
+    getComplainTrack(id);
     setTrackModal(true);
   }
 
   const handleCloseTrackModal = () => {
-    setItem({});
+    setComplainTrack([]);
     setTrackModal(false);
   }
 
@@ -113,12 +135,12 @@ const AdminComplain = () => {
     setSnackbar(false);
   }
 
-  const getCalibrations = () => {
+  const getComplains = () => {
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/calibration`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .get(`${process.env.REACT_APP_BASE_URL}/complain/find-all`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
-          setCalibrations(response.data);
+          setComplains(response.data);
         }
       })
       .catch((error) => {
@@ -126,9 +148,9 @@ const AdminComplain = () => {
       });
   };
 
-  const getCalibrationReport = (item) => {
+  const getCalibrationReport = (id) => {
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/calibration-report/${item.id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .get(`${process.env.REACT_APP_BASE_URL}/calibration-report/${id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
           setCalibrationReport(response.data);
@@ -139,12 +161,12 @@ const AdminComplain = () => {
       });
   };
 
-  const getCalibrationTrack = (id) => {
+  const getComplainTrack = (id) => {
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/calibration-track/find-by-calibration-id/${id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .get(`${process.env.REACT_APP_BASE_URL}/complain-track/find-by-complain-id/${id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
-          setCalibrationTrack(response.data);
+          setComplainTrack(response.data);
         }
       })
       .catch((error) => {
@@ -167,23 +189,10 @@ const AdminComplain = () => {
       });
   };
 
-  const getTechnicianAutocomplete = (id) => {
-    axios
-      .get(`${process.env.REACT_APP_BASE_URL}/employee/technician/autocomplete`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
-      .then((response) => {
-        if (response.status === 200) {
-          setTechnicianAutocomplete(response.data);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const confirmCalibration = () => {
+  const confirmComplain = () => {
     setLoading(true);
     axios
-      .post(`${process.env.REACT_APP_BASE_URL}/calibration/confirm/${id}`, confirm, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .post(`${process.env.REACT_APP_BASE_URL}/complain/confirm/${id}`, confirm, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
           setSnackbar({
@@ -193,7 +202,7 @@ const AdminComplain = () => {
           });
           setLoading(false);
           handleCloseConfirmModal();
-          getCalibrations();
+          getComplains();
         }
       })
       .catch((error) => {
@@ -207,10 +216,10 @@ const AdminComplain = () => {
       });
   };
 
-  const forwardCalibration = () => {
+  const forwardComplain = () => {
     setLoading(true);
     axios
-      .post(`${process.env.REACT_APP_BASE_URL}/calibration/forward-to-technician/${id}`, forward, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .post(`${process.env.REACT_APP_BASE_URL}/complain/forward/${id}`, forward, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
           setSnackbar({
@@ -220,7 +229,7 @@ const AdminComplain = () => {
           });
           setLoading(false);
           handleCloseForwardModal();
-          getCalibrations();
+          getComplains();
         }
       })
       .catch((error) => {
@@ -234,37 +243,53 @@ const AdminComplain = () => {
       });
   };
 
+  const getTypewriterAutocomplete = () => {
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/employee/typewriter/autocomplete`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setTypewriterAutocomplete(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const getTechnicianAutocomplete = () => {
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/employee/technician/autocomplete`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setTechnicianAutocomplete(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   useEffect(() => {
-    getCalibrations();
+    getComplains();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const columns = [
     {
-      name: 'Nomor Order',
-      selector: row => row.orderNumber,
+      name: 'Nomor Aduan',
+      selector: row => row.complainNumber,
       wrap: true,
       sortable: true
     },
     {
       name: 'Nama Peralatan',
-      selector: row => row.equipment.equipmentName,
+      selector: row => row.calibration.equipment.equipmentName,
       wrap: true,
       sortable: true
     },
     {
-      name: 'Tgl Order',
-      selector: row => (<Moment format="YYYY-MM-DD">{row.calibrationDate}</Moment>),
-      sortable: true
-    },
-    {
-      name: 'Tgl Diterima',
-      selector: row => row.receivedDate ? (<Moment format="YYYY-MM-DD">{row.receivedDate}</Moment>) : "",
-      sortable: true
-    },
-    {
       name: 'Status',
-      selector: row => row.calibrationStatus.calibrationStatusName,
+      selector: row => row.complainStatus.complainStatusName,
       wrap: true,
       sortable: true
     },
@@ -275,7 +300,7 @@ const AdminComplain = () => {
           <Button size="small" style={{ margin: '6px 3px 3px 0px' }}
             onClick={() => handleOpenConfirmModal(row.id)}
             variant="contained"
-            disabled={row.calibrationStatus.calibrationStatusCode !== 'SUBMITTED'}
+            disabled={row.complainStatus.complainStatusCode !== 'SUBMITTED'}
             color="success">
             Konfirmasi
           </Button>
@@ -295,7 +320,7 @@ const AdminComplain = () => {
           <Button size="small" style={{ margin: '3px 3px 6px 3px' }}
             onClick={() => handleOpenForwardModal(row.id)}
             variant="contained"
-            disabled={row.calibrationStatus.calibrationStatusCode !== 'CONFIRM_BY_ADMIN'}
+            disabled={row.complainStatus.complainStatusCode !== 'CONFIRM_BY_QUALITY'}
             color="warning">
             Teruskan
           </Button>
@@ -388,7 +413,7 @@ const AdminComplain = () => {
           <CardContent>
             <Grid container>
               <Grid item sm={8} md={10} lg={10}>
-                <Typography variant="h3">Daftar Kalibrasi</Typography>
+                <Typography variant="h3">Daftar Aduan Kalibrasi</Typography>
               </Grid>
             </Grid>
 
@@ -442,7 +467,7 @@ const AdminComplain = () => {
                   fontWeight: "500",
                 }}
               >
-                Konfirmasi Kalibrasi
+                Konfirmasi Aduan Kalibrasi
               </Typography>
             </Box>
           </Box>
@@ -455,19 +480,19 @@ const AdminComplain = () => {
             <form>
               <TextField
                 id="outlined-multiline-static"
-                label="Nomor Order"
+                label="Nomor Aduan"
                 rows={4}
                 variant="outlined"
                 fullWidth
-                name="orderNumber"
-                value={confirm.orderNumber}
+                name="complainNumber"
+                value={confirm.complainNumber}
                 onChange={handleConfirmChange}
                 sx={{
                   mb: 2,
                 }}
               />
               <div>
-                <Button onClick={confirmCalibration}
+                <Button onClick={confirmComplain}
                   fullWidth color="primary"
                   size="large" variant="contained"
                   disabled={loading}>
@@ -480,7 +505,7 @@ const AdminComplain = () => {
       </Modal>
 
       <Modal
-        open={forwarModal}
+        open={forwardModal}
         onClose={handleCloseForwardModal}
       >
         <Card
@@ -504,7 +529,7 @@ const AdminComplain = () => {
                   fontWeight: "500",
                 }}
               >
-                Teruskan Kalibrasi
+                Teruskan Aduan Kalibrasi
               </Typography>
             </Box>
           </Box>
@@ -515,23 +540,60 @@ const AdminComplain = () => {
             }}
           >
             <form>
-              <Autocomplete 
-                disablePortal
-                id="combo-box-demo"
-                options={technicianAutocomplete}
-                name="employeeId"
-                onChange={handleAutocomplete}
+              <TextField
                 fullWidth
-                renderInput={(params) => <TextField
-                  {...params}
-                  label="Pilih Teknisi"
-                  placeholder="Pilih Teknisi" />}
+                id="standard-select-number"
+                variant="outlined"
+                select
+                value={forward.forwardTypeId}
+                onChange={handleForwardChange}
+                name="forwardTypeId"
+                label="Jenis Terusan"
                 sx={{
                   mb: 2,
                 }}
-              />
+              >
+                {forwardType.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+
+              {forward.forwardTypeId === 1 ?
+                <Autocomplete
+                  disablePortal
+                  id="combo-box-demo"
+                  options={technicianAutocomplete}
+                  name="employeeId"
+                  onChange={handleAutocomplete}
+                  fullWidth
+                  renderInput={(params) => <TextField
+                    {...params}
+                    label="Pilih Teknisi"
+                    placeholder="Pilih Teknisi" />}
+                  sx={{
+                    mb: 2,
+                  }}
+                /> :
+                <Autocomplete
+                  disablePortal
+                  id="combo-box-demo"
+                  options={typewriterAutocomplete}
+                  name="employeeId"
+                  onChange={handleAutocomplete}
+                  fullWidth
+                  renderInput={(params) => <TextField
+                    {...params}
+                    label="Pilih Bag. Sertifikat"
+                    placeholder="Pilih Bag. Sertifikat" />}
+                  sx={{
+                    mb: 2,
+                  }}
+                />
+              }
               <div>
-                <Button onClick={forwardCalibration}
+                <Button onClick={forwardComplain}
                   fullWidth color="primary"
                   size="large" variant="contained"
                   disabled={loading}>
@@ -821,7 +883,7 @@ const AdminComplain = () => {
                   </ListItem>
                   <ListItem>
                     <ListItemText primary="Tanggal Penerbitan"
-                      secondary={item.issuenceDate ? <Moment format="YYYY-MM-DD">{item.issuenceDate}</Moment> : '-'} />
+                      secondary={item.issuanceDate ? <Moment format="YYYY-MM-DD">{item.issuanceDate}</Moment> : '-'} />
                   </ListItem>
                 </List>
               </Grid>
@@ -857,6 +919,31 @@ const AdminComplain = () => {
               </Grid>
             </Grid>
 
+            <Divider />
+
+            <Grid container>
+              <Grid item md={6}>
+                <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                  <ListItem>
+                    <ListItemText primary="Nomor Aduan"
+                      secondary={complain.complainNumber ? complain.complainNumber : '-'} />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText primary="Catatan Aduan"
+                      secondary={complain.complainNote ? complain.complainNote : '-'} />
+                  </ListItem>
+                </List>
+              </Grid>
+              <Grid item md={6}>
+                <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                  <ListItem>
+                    <ListItemText primary="Jenis Aduan"
+                      secondary={complain.complainType?.complainTypeName ? complain.complainType?.complainTypeName : '-'} />
+                  </ListItem>
+                </List>
+              </Grid>
+            </Grid>
+
           </CardContent>
         </Card>
       </Modal>
@@ -868,14 +955,14 @@ const AdminComplain = () => {
         <Card
           variant="outlined"
           sx={{
+            maxHeight: 600,
+            overflow: 'auto',
             pb: 0,
           }}
           style={modalPosition}
         >
           <CardContent
             sx={{
-              maxHeight: 600,
-              overflow: 'auto',
               pb: "0 !important",
             }}
           >
@@ -895,7 +982,7 @@ const AdminComplain = () => {
                   }}
                   gutterBottom
                 >
-                  Lacak Kalibrasi
+                  Lacak Aduan Kalibrasi
                 </Typography>
                 <Typography
                   color="textSecondary"
@@ -905,7 +992,7 @@ const AdminComplain = () => {
                     fontSize: "13px",
                   }}
                 >
-                  Informasi status terkini proses kalibrasi
+                  Informasi status terkini proses aduan kalibrasi
                 </Typography>
               </Box>
             </Box>
@@ -914,8 +1001,8 @@ const AdminComplain = () => {
                 p: 0,
               }}
             >
-              {calibrationTrack.map((calibrationTrack) => (
-                <TimelineItem key={calibrationTrack.id}>
+              {complainTrack.map((complainTrack) => (
+                <TimelineItem key={complainTrack.trackDate}>
                   <TimelineOppositeContent
                     sx={{
                       fontSize: "12px",
@@ -923,7 +1010,7 @@ const AdminComplain = () => {
                       flex: "0 100px"
                     }}
                   >
-                    {<Moment format="dddd, YYYY-MM-DD">{calibrationTrack.trackDate}</Moment>}
+                    {<Moment format="dddd, YYYY-MM-DD">{complainTrack.trackDate}</Moment>}
                   </TimelineOppositeContent>
                   <TimelineSeparator>
                     <TimelineDot
@@ -938,7 +1025,7 @@ const AdminComplain = () => {
                       fontSize: "14px",
                     }}
                   >
-                    {calibrationTrack.calibrationStatus?.calibrationStatusCode} - {calibrationTrack.calibrationStatus?.calibrationStatusName}
+                    {complainTrack.complainStatus?.complainStatusCode} - {complainTrack.complainStatus?.complainStatusName}
                   </TimelineContent>
                 </TimelineItem>
               ))}
@@ -959,4 +1046,4 @@ const AdminComplain = () => {
   );
 };
 
-export default AdminComplain;
+export default QualityComplain;

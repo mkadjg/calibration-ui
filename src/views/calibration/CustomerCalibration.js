@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { Card, CardContent, Box, Typography, Modal, Button, TextField, Divider, Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Autocomplete, Rating } from "@material-ui/core";
+import { Card, CardContent, Box, Typography, Modal, Button, TextField, Divider, Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Autocomplete, Rating, MenuItem } from "@material-ui/core";
 
 import DataTable from "react-data-table-component";
 import axios from "axios";
@@ -18,6 +18,11 @@ const CustomerCalibration = () => {
   const [filterText, setFilterText] = useState('');
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
   const [calibrationTrack, setCalibrationTrack] = useState([]);
+  const [complainType, setComplainType] = useState([]);
+  const [complain, setComplain] = useState({
+    complainTypeId: 0,
+    complainNote: ''
+  });
   const [performanceAssessment, setPerformanceAssessment] = useState({
     performanceAssessmentNote: '',
     rating: 0
@@ -37,6 +42,7 @@ const CustomerCalibration = () => {
   const [detailModal, setDetailModal] = useState(false);
   const [trackModal, setTrackModal] = useState(false);
   const [assessmentModal, setAssessmentModal] = useState(false);
+  const [complainModal, setComplainModal] = useState(false);
   const [finishDialog, setFinishDialog] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -65,6 +71,13 @@ const CustomerCalibration = () => {
   const handleAssessmentChange = (e) => {
     setAssessment({
       ...assessment,
+      [e.target.name]: e.target.value
+    })
+  }
+
+  const handleComplainChange = (e) => {
+    setComplain({
+      ...complain,
       [e.target.name]: e.target.value
     })
   }
@@ -114,6 +127,17 @@ const CustomerCalibration = () => {
   const handleCloseTrackModal = () => {
     setCalibrationTrack([]);
     setTrackModal(false);
+  }
+
+  const handleOpenComplainModal = (id) => {
+    setId(id);
+    getComplainType();
+    setComplainModal(true);
+  }
+
+  const handleCloseComplainModal = () => {
+    setId(null);
+    setComplainModal(false);
   }
 
   const handleOpenFinishDialog = (id) => {
@@ -200,6 +224,34 @@ const CustomerCalibration = () => {
       });
   };
 
+  const createComplain = (e) => {
+    e.preventDefault();
+    setLoading(true);
+    axios
+      .post(`${process.env.REACT_APP_BASE_URL}/complain/${id}`, complain, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 201) {
+          setSnackbar({
+            open: true,
+            severity: "success",
+            message: "Simpan data berhasil"
+          });
+          setLoading(false);
+          handleCloseComplainModal();
+          getCalibrations();
+        }
+      })
+      .catch((error) => {
+        setSnackbar({
+          open: true,
+          severity: "error",
+          message: error.response?.data
+        });
+        setLoading(false);
+        handleCloseComplainModal();
+      });
+  };
+
   const getCalibrationReport = (item) => {
     axios
       .get(`${process.env.REACT_APP_BASE_URL}/calibration-report/${item.id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
@@ -247,6 +299,19 @@ const CustomerCalibration = () => {
       .then((response) => {
         if (response.status === 200) {
           setEquipmentAutocomplete(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const getComplainType = (id) => {
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/complain-type/find-all`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setComplainType(response.data);
         }
       })
       .catch((error) => {
@@ -323,11 +388,18 @@ const CustomerCalibration = () => {
             color="secondary">
             Detail
           </Button>
-          <Button size="small" style={{ margin: '6px 6px 3px 3px' }}
+          <Button size="small" style={{ margin: '6px 3px 3px 3px' }}
             onClick={() => handleOpenTrackModal(row.id)}
             variant="contained"
             color="info">
             Lacak
+          </Button>
+          <Button size="small" style={{ margin: '6px 3px 3px 3px' }}
+            onClick={() => handleOpenComplainModal(row.id)}
+            variant="contained"
+            disabled={!(row.calibrationStatus.calibrationStatusCode === 'FINISHED' && row.isAssessed && !row.isComplain)}
+            color="error">
+            Aduan
           </Button>
           <br />
           <Button size="small" style={{ margin: '3px 3px 6px 0px' }}
@@ -346,7 +418,7 @@ const CustomerCalibration = () => {
           </Button>
         </>
       ),
-      width: '180px'
+      width: '240px'
     },
 
   ];
@@ -821,7 +893,7 @@ const CustomerCalibration = () => {
                   </ListItem>
                   <ListItem>
                     <ListItemText primary="Tanggal Penerbitan"
-                      secondary={item.issuenceDate ? <Moment format="YYYY-MM-DD">{item.issuenceDate}</Moment> : '-'} />
+                      secondary={item.issuanceDate ? <Moment format="YYYY-MM-DD">{item.issuanceDate}</Moment> : '-'} />
                   </ListItem>
                 </List>
               </Grid>
@@ -1007,6 +1079,88 @@ const CustomerCalibration = () => {
               />
               <div>
                 <Button onClick={assessmentCalibration}
+                  fullWidth color="primary"
+                  size="large" variant="contained"
+                  disabled={loading}>
+                  {loading ? <CircularProgress size={26} color="inherit" /> : "Simpan"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </Modal>
+
+      <Modal
+        open={complainModal}
+        onClose={handleCloseComplainModal}
+      >
+        <Card
+          variant="outlined"
+          sx={{
+            p: 0,
+          }}
+          style={modalPosition}
+        >
+          <Box
+            sx={{
+              padding: "15px 30px",
+            }}
+            display="flex"
+            alignItems="center"
+          >
+            <Box flexGrow={1}>
+              <Typography
+                sx={{
+                  fontSize: "18px",
+                  fontWeight: "500",
+                }}
+              >
+                Aduan Kalibrasi
+              </Typography>
+            </Box>
+          </Box>
+          <Divider />
+          <CardContent
+            sx={{
+              padding: "20px",
+            }}
+          >
+            <form>
+              <TextField
+                fullWidth
+                id="standard-select-number"
+                variant="outlined"
+                select
+                value={complain.complainTypeId}
+                onChange={handleComplainChange}
+                name="complainTypeId"
+                label="Jenis Pengaduan"
+                sx={{
+                  mb: 2,
+                }}
+              >
+                {complainType.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.complainTypeName}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                id="outlined-multiline-static"
+                label="Catatan Aduan"
+                multiline
+                rows={4}
+                variant="outlined"
+                fullWidth
+                name="complainNote"
+                value={complain.complainNote}
+                onChange={handleComplainChange}
+                sx={{
+                  mb: 2,
+                }}
+              />
+              <div>
+                <Button onClick={createComplain}
                   fullWidth color="primary"
                   size="large" variant="contained"
                   disabled={loading}>

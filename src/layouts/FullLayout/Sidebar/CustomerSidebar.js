@@ -9,22 +9,22 @@ const CustomerSidebar = [
   {
     title: "Dashboard",
     icon: DashboardOutlined,
-    href: "/dashboards/dashboard1",
+    href: "/main/dashboards/dashboard1",
   },
   {
     title: "Peralatan",
     icon: ConstructionOutlined,
-    href: "/equipment",
+    href: "/main/equipment",
   },
   {
     title: "Kalibrasi",
     icon: DescriptionOutlined,
-    href: "/customer/calibration",
+    href: "/main/customer/calibration",
   },
   {
     title: "Aduan",
     icon: AssignmentReturnOutlined,
-    href: "/customer/complain",
+    href: "/main/customer/complain",
   },
 ];
 

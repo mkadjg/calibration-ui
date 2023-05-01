@@ -34,7 +34,7 @@ const AdminCalibration = () => {
 
   // modal
   const [confirmModal, setConfirmModal] = useState(false);
-  const [forwarModal, setForwardModal] = useState(false);
+  const [forwardModal, setForwardModal] = useState(false);
   const [detailModal, setDetailModal] = useState(false);
   const [trackModal, setTrackModal] = useState(false);
   const [snackbar, setSnackbar] = useState({
@@ -480,7 +480,7 @@ const AdminCalibration = () => {
       </Modal>
 
       <Modal
-        open={forwarModal}
+        open={forwardModal}
         onClose={handleCloseForwardModal}
       >
         <Card
@@ -821,7 +821,7 @@ const AdminCalibration = () => {
                   </ListItem>
                   <ListItem>
                     <ListItemText primary="Tanggal Penerbitan"
-                      secondary={item.issuenceDate ? <Moment format="YYYY-MM-DD">{item.issuenceDate}</Moment> : '-'} />
+                      secondary={item.issuanceDate ? <Moment format="YYYY-MM-DD">{item.issuanceDate}</Moment> : '-'} />
                   </ListItem>
                 </List>
               </Grid>

@@ -11,10 +11,9 @@ import {
   Button,
   CircularProgress,
   Alert,
-  Link,
+  Snackbar,
 } from "@material-ui/core";
-import Footer from "./../../layouts/FullLayout/Footer/Footer";
-import { TopbarHeight } from "../../assets/global/Theme-variable";
+import Footer from "../../layouts/FullLayout/Footer/Footer";
 import axios from "axios";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
@@ -25,22 +24,14 @@ const MainWrapper = experimentalStyled("div")(({ theme }) => ({
   overflow: "hidden",
   width: "100%",
 }));
-const PageWrapper = experimentalStyled("div")(({ theme }) => ({
-  display: "flex",
-  flex: "1 1 auto",
-  overflow: "hidden",
 
-  backgroundColor: theme.palette.background.default,
-  [theme.breakpoints.up("lg")]: {
-    paddingTop: TopbarHeight,
-  },
-  [theme.breakpoints.down("lg")]: {
-    paddingTop: "64px",
-  },
-}));
-
-const Login = () => {
+const Register = () => {
   const [data, setData] = useState({
+    companyName: '',
+    picName: '',
+    email: '',
+    phoneNumber: '',
+    address: '', 
     username: '',
     password: ''
   });
@@ -53,6 +44,11 @@ const Login = () => {
   // eslint-disable-next-line no-unused-vars
   const [cookies, setCookies] = useCookies({});
   const navigate = useNavigate();
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    severity: "success",
+    message: ""
+  });
 
   const handleChange = (e) => {
     setData({
@@ -61,15 +57,23 @@ const Login = () => {
     })
   }
 
+  const handleCloseSnackbar = () => {
+    setSnackbar(false);
+  }
+
   const submit = (e) => {
     e.preventDefault();
     setLoading(true);
-    axios.post(`${process.env.REACT_APP_BASE_URL}/auth/login`, data)
+    axios.post(`${process.env.REACT_APP_BASE_URL}/customer/register`, data)
       .then((response) => {
-        if (response.status === 200) {
+        if (response.status === 201) {
           setLoading(false);
-          setCookies('auth', response.data, { path: '/' });
-          navigate("/main/dashboards/dashboard1");
+          setSnackbar({
+            open: true,
+            severity: "success",
+            message: "Pendaftaran pelanggan berhasil"
+          });
+          navigate("/#/login");
         } else {
           setLoading(false);
           setAlert({
@@ -92,10 +96,9 @@ const Login = () => {
 
   return (
     <MainWrapper>
-      <PageWrapper>
         <Container>
           <Card
-            style={{ marginTop: '8%', marginLeft: '28%', marginRight: '28%' }}
+            style={{ marginLeft: '18%', marginRight: '18%' }}
             variant="outlined"
             sx={{
               p: 0,
@@ -115,7 +118,7 @@ const Login = () => {
                     fontWeight: "500",
                   }}
                 >
-                  Login
+                  Formulir Pendaftaran Pelanggan
                 </Typography>
               </Box>
             </Box>
@@ -126,6 +129,76 @@ const Login = () => {
               }}
             >
               <form>
+
+                <TextField
+                  id="company-name-text"
+                  label="Nama Perusahaan"
+                  type="text"
+                  name="companyName"
+                  variant="outlined"
+                  fullWidth
+                  sx={{
+                    mb: 2,
+                  }}
+                  onChange={handleChange}
+                />
+
+                <TextField
+                  id="pic-name-text"
+                  label="Nama PIC"
+                  type="text"
+                  name="picName"
+                  variant="outlined"
+                  fullWidth
+                  sx={{
+                    mb: 2,
+                  }}
+                  onChange={handleChange}
+                />
+
+                <TextField
+                  id="email-text"
+                  label="Email"
+                  type="text"
+                  name="email"
+                  variant="outlined"
+                  fullWidth
+                  sx={{
+                    mb: 2,
+                  }}
+                  onChange={handleChange}
+                />
+
+                <TextField
+                  id="phone-number-text"
+                  label="Nomor Telepon"
+                  type="text"
+                  name="phoneNumber"
+                  variant="outlined"
+                  fullWidth
+                  sx={{
+                    mb: 2,
+                  }}
+                  onChange={handleChange}
+                />
+
+                <TextField
+                  id="address-text"
+                  label="Alamat"
+                  type="text"
+                  name="address"
+                  variant="outlined"
+                  fullWidth
+                  multiline
+                  rows={2}
+                  sx={{
+                    mb: 2,
+                  }}
+                  onChange={handleChange}
+                />
+
+                <Divider/>
+                <br/>
 
                 <TextField
                   id="email-text"
@@ -160,7 +233,6 @@ const Login = () => {
                   variant="contained"
                   onClick={submit}
                   disabled={loading}
-
                 >
                   {loading ? <CircularProgress size={26} color="inherit" /> : "Submit"}
                 </Button>
@@ -171,15 +243,20 @@ const Login = () => {
                   </Alert> : ""}
               </form>
             </CardContent>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography>Belum punya akun ? <Link href="/#/register">Daftar Sekarang</Link></Typography>
-            </Box>
             <Footer />
           </Card>
         </Container>
-      </PageWrapper>
+
+        <Snackbar open={snackbar.open}
+        autoHideDuration={5000}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        onClose={handleCloseSnackbar}>
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </MainWrapper>
   );
 };
 
-export default Login;
+export default Register;

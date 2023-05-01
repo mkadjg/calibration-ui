@@ -62,7 +62,7 @@ const Header = (props) => {
         {/* ------------------------------------------- */}
         {/* Notifications Dropdown */}
         {/* ------------------------------------------- */}
-        <Typography>{cookies.auth.role.roleName === 'Customer' ? cookies.auth.role.roleName : cookies.auth.userProfile?.jobPosition?.jobPositionName }</Typography>
+        <Typography>{cookies.auth?.role?.roleName === 'Customer' ? cookies.auth?.role?.roleName : cookies.auth?.userProfile?.jobPosition?.jobPositionName }</Typography>
         {/* ------------------------------------------- */}
         {/* End Notifications Dropdown */}
         {/* ------------------------------------------- */}
@@ -126,7 +126,7 @@ const Header = (props) => {
                 ml: 2,
               }}
             >
-              {cookies.auth.role.roleName === 'Customer' ? cookies.auth.userProfile?.picName : cookies.auth.userProfile?.employeeName}
+              {cookies.auth?.role?.roleName === 'Customer' ? cookies.auth?.userProfile?.picName : cookies.auth?.userProfile?.employeeName}
             </Box>
           </MenuItem>
           <Divider />

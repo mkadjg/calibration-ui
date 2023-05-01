@@ -1016,7 +1016,7 @@ const TechnicianCalibration = () => {
                   </ListItem>
                   <ListItem>
                     <ListItemText primary="Tanggal Penerbitan"
-                      secondary={item.issuenceDate ? <Moment format="YYYY-MM-DD">{item.issuenceDate}</Moment> : '-'} />
+                      secondary={item.issuanceDate ? <Moment format="YYYY-MM-DD">{item.issuanceDate}</Moment> : '-'} />
                   </ListItem>
                 </List>
               </Grid>

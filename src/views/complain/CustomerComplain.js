@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { Card, CardContent, Box, Typography, Modal, Button, TextField, Divider, Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Autocomplete, Rating } from "@material-ui/core";
+import { Card, CardContent, Box, Typography, Modal, Button, Divider, Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, List, ListItem, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Rating } from "@material-ui/core";
 
 import DataTable from "react-data-table-component";
 import axios from "axios";
@@ -12,107 +12,57 @@ import { Timeline, TimelineConnector, TimelineContent, TimelineDot, TimelineItem
 const CustomerComplain = () => {
   // eslint-disable-next-line no-unused-vars
   const [cookies, setCookies] = useCookies({});
-  const [calibrations, setCalibrations] = useState([]);
+  const [complains, setComplains] = useState([]);
 
   // filter
   const [filterText, setFilterText] = useState('');
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
-  const [calibrationTrack, setCalibrationTrack] = useState([]);
+  const [complainTrack, setComplainTrack] = useState([]);
   const [performanceAssessment, setPerformanceAssessment] = useState({
     performanceAssessmentNote: '',
     rating: 0
   });
-  const [equipmentAutocomplete, setEquipmentAutocomplete] = useState([]);
   const [calibrationReport, setCalibrationReport] = useState([]);
-  const filteredItems = calibrations.filter(
+  const filteredItems = complains.filter(
     (item) =>
-      (item.equipment.equipmentName && item.equipment.equipmentName.toLowerCase().includes(filterText.toLowerCase())) ||
-      (item.calibrationDate && item.calibrationDate.toString().toLowerCase().includes(filterText.toLowerCase())) ||
-      (item.receivedDate && item.receivedDate.toString().toLowerCase().includes(filterText.toLowerCase())) ||
-      (item.calibrationStatus.calibrationStatusCode && item.calibrationStatus.calibrationStatusCode.toLowerCase().includes(filterText.toLowerCase()))
+      (item.calibration.equipment.equipmentName && item.calibration.equipment.equipmentName.toLowerCase().includes(filterText.toLowerCase())) ||
+      (item.complainStatus.complainStatusName && item.complainStatus.complainStatusName.toLowerCase().includes(filterText.toLowerCase()))
   );
 
   // modal
-  const [createModal, setCreateModal] = useState(false);
   const [detailModal, setDetailModal] = useState(false);
   const [trackModal, setTrackModal] = useState(false);
-  const [assessmentModal, setAssessmentModal] = useState(false);
   const [finishDialog, setFinishDialog] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     severity: "success",
     message: ""
   });
+  const [complain, setComplain] = useState({});
   const [item, setItem] = useState({});
-  const [body, setBody] = useState({
-    equipmentId: 0,
-    calibrationNote: ''
-  });
-  const [assessment, setAssessment] = useState({
-    performanceAssessmentNote: '',
-    rating: 0
-  });
   const [id, setId] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  const handleCreateChange = (e) => {
-    setBody({
-      ...body,
-      [e.target.name]: e.target.value
-    })
-  }
-
-  const handleAssessmentChange = (e) => {
-    setAssessment({
-      ...assessment,
-      [e.target.name]: e.target.value
-    })
-  }
-
-  const handleAutocomplete = (e, v) => {
-    setBody({
-      ...body,
-      equipmentId: v.id
-    })
-  }
-
-  const handleOpenCreateModal = () => {
-    getEquipmentAutocomplete();
-    setCreateModal(true);
-  }
-
-  const handleCloseCreateModal = () => {
-    setCreateModal(false);
-  }
-
-  const handleOpenAssessmentModal = (id) => {
-    setId(id);
-    setAssessmentModal(true);
-  }
-
-  const handleCloseAssessmentModal = () => {
-    setAssessmentModal(false);
-  }
 
   const handleOpenDetailModal = (item) => {
-    setItem(item);
-    getCalibrationReport(item);
-    getPerformanceAssessment(item.id);
+    setComplain(item);
+    setItem(item.calibration);
+    getCalibrationReport(item.calibration.id);
+    getPerformanceAssessment(item.calibration.id);
     setDetailModal(true);
   }
 
   const handleCloseDetailModal = () => {
+    setComplain({});
     setItem({});
     setDetailModal(false);
   }
 
   const handleOpenTrackModal = (id) => {
-    getCalibrationTrack(id);
+    getComplainTrack(id);
     setTrackModal(true);
   }
 
   const handleCloseTrackModal = () => {
-    setCalibrationTrack([]);
+    setComplainTrack([]);
     setTrackModal(false);
   }
 
@@ -131,12 +81,12 @@ const CustomerComplain = () => {
     setSnackbar(false);
   }
 
-  const getCalibrations = () => {
+  const getComplains = () => {
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/calibration/find-by-customer-id/${cookies.auth.userProfile.id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .get(`${process.env.REACT_APP_BASE_URL}/complain/find-by-customer-id/${cookies.auth.userProfile.id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
-          setCalibrations(response.data);
+          setComplains(response.data);
         }
       })
       .catch((error) => {
@@ -144,65 +94,9 @@ const CustomerComplain = () => {
       });
   };
 
-  const createCalibration = (e) => {
-    e.preventDefault();
-    setLoading(true);
+  const getCalibrationReport = (id) => {
     axios
-      .post(`${process.env.REACT_APP_BASE_URL}/calibration`, body, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
-      .then((response) => {
-        if (response.status === 201) {
-          setSnackbar({
-            open: true,
-            severity: "success",
-            message: "Simpan data berhasil"
-          });
-          setLoading(false);
-          handleCloseCreateModal();
-          getCalibrations();
-        }
-      })
-      .catch((error) => {
-        setSnackbar({
-          open: true,
-          severity: "error",
-          message: error.response?.data
-        });
-        setLoading(false);
-        handleCloseCreateModal();
-      });
-  };
-
-  const assessmentCalibration = (e) => {
-    e.preventDefault();
-    setLoading(true);
-    axios
-      .post(`${process.env.REACT_APP_BASE_URL}/performance-assessment/${id}`, assessment, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
-      .then((response) => {
-        if (response.status === 201) {
-          setSnackbar({
-            open: true,
-            severity: "success",
-            message: "Simpan data berhasil"
-          });
-          setLoading(false);
-          handleCloseAssessmentModal();
-          getCalibrations();
-        }
-      })
-      .catch((error) => {
-        setSnackbar({
-          open: true,
-          severity: "error",
-          message: error.response?.data
-        });
-        setLoading(false);
-        handleCloseAssessmentModal();
-      });
-  };
-
-  const getCalibrationReport = (item) => {
-    axios
-      .get(`${process.env.REACT_APP_BASE_URL}/calibration-report/${item.id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .get(`${process.env.REACT_APP_BASE_URL}/calibration-report/${id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
           setCalibrationReport(response.data);
@@ -213,12 +107,12 @@ const CustomerComplain = () => {
       });
   };
 
-  const getCalibrationTrack = (id) => {
+  const getComplainTrack = (id) => {
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/calibration-track/find-by-calibration-id/${id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .get(`${process.env.REACT_APP_BASE_URL}/complain-track/find-by-complain-id/${id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
-          setCalibrationTrack(response.data);
+          setComplainTrack(response.data);
         }
       })
       .catch((error) => {
@@ -241,22 +135,9 @@ const CustomerComplain = () => {
       });
   };
 
-  const getEquipmentAutocomplete = (id) => {
+  const finishComplain = () => {
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/equipment/autocomplete/${cookies.auth.userProfile.id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
-      .then((response) => {
-        if (response.status === 200) {
-          setEquipmentAutocomplete(response.data);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const finishCalibration = () => {
-    axios
-      .post(`${process.env.REACT_APP_BASE_URL}/calibration/finish-by-customer/${id}`, null, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .post(`${process.env.REACT_APP_BASE_URL}/complain/finish-by-customer/${id}`, null, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
           setSnackbar({
@@ -265,7 +146,7 @@ const CustomerComplain = () => {
             message: "Simpan data berhasil"
           });
         }
-        getCalibrations();
+        getComplains();
         handleCloseFinishDialog();
       })
       .catch((error) => {
@@ -274,42 +155,32 @@ const CustomerComplain = () => {
           severity: "success",
           message: error.response?.data
         });
-        getCalibrations();
+        getComplains();
         handleCloseFinishDialog();
       });
   };
 
   useEffect(() => {
-    getCalibrations();
+    getComplains();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const columns = [
     {
-      name: 'Nomor Order',
-      selector: row => row.orderNumber,
+      name: 'Nomor Aduan',
+      selector: row => row.complainNumber,
       wrap: true,
       sortable: true
     },
     {
       name: 'Nama Peralatan',
-      selector: row => row.equipment.equipmentName,
+      selector: row => row.calibration.equipment.equipmentName,
       wrap: true,
       sortable: true
     },
     {
-      name: 'Tgl Order',
-      selector: row => (<Moment format="YYYY-MM-DD">{row.calibrationDate}</Moment>),
-      sortable: true
-    },
-    {
-      name: 'Tgl Diterima',
-      selector: row => row.receivedDate ? (<Moment format="YYYY-MM-DD">{row.receivedDate}</Moment>) : "",
-      sortable: true
-    },
-    {
       name: 'Status',
-      selector: row => row.calibrationStatus.calibrationStatusName,
+      selector: row => row.complainStatus.complainStatusName,
       wrap: true,
       sortable: true
     },
@@ -333,16 +204,9 @@ const CustomerComplain = () => {
           <Button size="small" style={{ margin: '3px 3px 6px 0px' }}
             onClick={() => handleOpenFinishDialog(row.id)}
             variant="contained"
-            disabled={row.calibrationStatus.calibrationStatusCode !== 'FORWARD_TO_CUSTOMER'}
+            disabled={row.complainStatus.complainStatusCode !== 'FORWARD_TO_CUSTOMER'}
             color="success">
             Selesai
-          </Button>
-          <Button size="small" style={{ margin: '3px 6px 6px 3px' }}
-            onClick={() => handleOpenAssessmentModal(row.id)}
-            variant="contained"
-            disabled={!(row.calibrationStatus.calibrationStatusCode === 'FINISHED' && !row.isAssessed)}
-            color="warning">
-            Nilai
           </Button>
         </>
       ),
@@ -433,10 +297,7 @@ const CustomerComplain = () => {
           <CardContent>
             <Grid container>
               <Grid item sm={8} md={10} lg={10}>
-                <Typography variant="h3">Daftar Kalibrasi</Typography>
-              </Grid>
-              <Grid item sm={4} md={2} lg={2} style={{ paddingRight: '15px' }}>
-                <Button fullWidth variant="contained" color="primary" onClick={handleOpenCreateModal}>Tambah</Button>
+                <Typography variant="h3">Daftar Aduan Kalibrasi</Typography>
               </Grid>
             </Grid>
 
@@ -464,84 +325,6 @@ const CustomerComplain = () => {
           </CardContent>
         </Card>
       </Box>
-
-      <Modal
-        open={createModal}
-        onClose={handleCloseCreateModal}
-      >
-        <Card
-          variant="outlined"
-          sx={{
-            p: 0,
-          }}
-          style={modalPosition}
-        >
-          <Box
-            sx={{
-              padding: "15px 30px",
-            }}
-            display="flex"
-            alignItems="center"
-          >
-            <Box flexGrow={1}>
-              <Typography
-                sx={{
-                  fontSize: "18px",
-                  fontWeight: "500",
-                }}
-              >
-                Tambah Kalibrasi
-              </Typography>
-            </Box>
-          </Box>
-          <Divider />
-          <CardContent
-            sx={{
-              padding: "30px",
-            }}
-          >
-            <form>
-              <Autocomplete
-                disablePortal
-                id="combo-box-demo"
-                options={equipmentAutocomplete}
-                name="equipmentId"
-                onChange={handleAutocomplete}
-                fullWidth
-                renderInput={(params) => <TextField
-                  {...params}
-                  label="Pilih Peralatan"
-                  placeholder="Pilih Peralatan" />}
-                sx={{
-                  mb: 2,
-                }}
-              />
-              <TextField
-                id="outlined-multiline-static"
-                label="Catatan Kalibrasi"
-                multiline
-                rows={4}
-                variant="outlined"
-                fullWidth
-                name="calibrationNote"
-                value={body.calibrationNote}
-                onChange={handleCreateChange}
-                sx={{
-                  mb: 2,
-                }}
-              />
-              <div>
-                <Button onClick={createCalibration}
-                  fullWidth color="primary"
-                  size="large" variant="contained"
-                  disabled={loading}>
-                  {loading ? <CircularProgress size={26} color="inherit" /> : "Simpan"}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </Modal>
 
       <Modal
         open={detailModal}
@@ -821,7 +604,7 @@ const CustomerComplain = () => {
                   </ListItem>
                   <ListItem>
                     <ListItemText primary="Tanggal Penerbitan"
-                      secondary={item.issuenceDate ? <Moment format="YYYY-MM-DD">{item.issuenceDate}</Moment> : '-'} />
+                      secondary={item.issuanceDate ? <Moment format="YYYY-MM-DD">{item.issuanceDate}</Moment> : '-'} />
                   </ListItem>
                 </List>
               </Grid>
@@ -852,6 +635,31 @@ const CustomerComplain = () => {
                   <ListItem>
                     <ListItemText primary="Catatan Pelanggan"
                       secondary={performanceAssessment.performanceAssessmentNote ? performanceAssessment.performanceAssessmentNote : '-'} />
+                  </ListItem>
+                </List>
+              </Grid>
+            </Grid>
+
+            <Divider />
+
+            <Grid container>
+              <Grid item md={6}>
+                <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                  <ListItem>
+                  <ListItemText primary="Nomor Aduan"
+                      secondary={complain.complainNumber ? complain.complainNumber : '-'} />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText primary="Catatan Aduan"
+                      secondary={complain.complainNote ? complain.complainNote : '-'} />
+                  </ListItem>
+                </List>
+              </Grid>
+              <Grid item md={6}>
+                <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                  <ListItem>
+                    <ListItemText primary="Jenis Aduan"
+                      secondary={complain.complainType?.complainTypeName ? complain.complainType?.complainTypeName : '-'} />
                   </ListItem>
                 </List>
               </Grid>
@@ -895,7 +703,7 @@ const CustomerComplain = () => {
                   }}
                   gutterBottom
                 >
-                  Lacak Kalibrasi
+                  Lacak Aduan Kalibrasi
                 </Typography>
                 <Typography
                   color="textSecondary"
@@ -905,7 +713,7 @@ const CustomerComplain = () => {
                     fontSize: "13px",
                   }}
                 >
-                  Informasi status terkini proses kalibrasi
+                  Informasi status terkini proses aduan kalibrasi
                 </Typography>
               </Box>
             </Box>
@@ -914,8 +722,8 @@ const CustomerComplain = () => {
                 p: 0,
               }}
             >
-              {calibrationTrack.map((calibrationTrack) => (
-                <TimelineItem key={calibrationTrack.trackDate}>
+              {complainTrack.map((complainTrack) => (
+                <TimelineItem key={complainTrack.trackDate}>
                   <TimelineOppositeContent
                     sx={{
                       fontSize: "12px",
@@ -923,7 +731,7 @@ const CustomerComplain = () => {
                       flex: "0 100px"
                     }}
                   >
-                    {<Moment format="dddd, YYYY-MM-DD">{calibrationTrack.trackDate}</Moment>}
+                    {<Moment format="dddd, YYYY-MM-DD">{complainTrack.trackDate}</Moment>}
                   </TimelineOppositeContent>
                   <TimelineSeparator>
                     <TimelineDot
@@ -938,82 +746,11 @@ const CustomerComplain = () => {
                       fontSize: "14px",
                     }}
                   >
-                    {calibrationTrack.calibrationStatus?.calibrationStatusCode} - {calibrationTrack.calibrationStatus?.calibrationStatusName}
+                    {complainTrack.complainStatus?.complainStatusCode} - {complainTrack.complainStatus?.complainStatusName}
                   </TimelineContent>
                 </TimelineItem>
               ))}
             </Timeline>
-          </CardContent>
-        </Card>
-      </Modal>
-
-      <Modal
-        open={assessmentModal}
-        onClose={handleCloseAssessmentModal}
-      >
-        <Card
-          variant="outlined"
-          sx={{
-            p: 0,
-          }}
-          style={modalPosition}
-        >
-          <Box
-            sx={{
-              padding: "15px 30px",
-            }}
-            display="flex"
-            alignItems="center"
-          >
-            <Box flexGrow={1}>
-              <Typography
-                sx={{
-                  fontSize: "18px",
-                  fontWeight: "500",
-                }}
-              >
-                Penilaian Kalibrasi
-              </Typography>
-            </Box>
-          </Box>
-          <Divider />
-          <CardContent
-            sx={{
-              padding: "20px",
-            }}
-          >
-            <form>
-              <Rating sx={{ fontSize: '45px' }} 
-                name="rating" 
-                onChange={handleAssessmentChange}
-                alue={assessment.rating} 
-                size="large" 
-              />
-              <br/>
-              <br/>
-              <TextField
-                id="outlined-multiline-static"
-                label="Komentar"
-                multiline
-                rows={4}
-                variant="outlined"
-                fullWidth
-                name="performanceAssessmentNote"
-                value={assessment.performanceAssessmentNote}
-                onChange={handleAssessmentChange}
-                sx={{
-                  mb: 2,
-                }}
-              />
-              <div>
-                <Button onClick={assessmentCalibration}
-                  fullWidth color="primary"
-                  size="large" variant="contained"
-                  disabled={loading}>
-                  {loading ? <CircularProgress size={26} color="inherit" /> : "Simpan"}
-                </Button>
-              </div>
-            </form>
           </CardContent>
         </Card>
       </Modal>
@@ -1025,16 +762,16 @@ const CustomerComplain = () => {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle fontSize={16} id="alert-dialog-title">
-          Konfirmasi penyelesaian proses kalibrasi
+          Konfirmasi penyelesaian aduan kalibrasi
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            {`Anda yakin mau menyelesaikan proses kalibrasi ini ?`}
+            {`Anda yakin mau menyelesaikan aduan kalibrasi ini ?`}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseFinishDialog}>No</Button>
-          <Button onClick={finishCalibration} autoFocus>
+          <Button onClick={finishComplain} autoFocus>
             Yes
           </Button>
         </DialogActions>

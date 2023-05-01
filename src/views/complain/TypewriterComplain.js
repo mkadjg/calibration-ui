@@ -11,34 +11,34 @@ import Moment from "react-moment";
 const TypewriterComplain = () => {
   // eslint-disable-next-line no-unused-vars
   const [cookies, setCookies] = useCookies({});
-  const [calibrations, setCalibrations] = useState([]);
+  const [complains, setComplains] = useState([]);
 
   // filter
   const [filterText, setFilterText] = useState('');
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
-  const [calibrationReport, setCalibrationReport] = useState([]);
   const [performanceAssessment, setPerformanceAssessment] = useState({
     performanceAssessmentNote: '',
     rating: 0
   });
-  const filteredItems = calibrations.filter(
+  const [calibrationReport, setCalibrationReport] = useState([]);
+  const filteredItems = complains.filter(
     (item) =>
-      (item.equipment.equipmentName && item.equipment.equipmentName.toLowerCase().includes(filterText.toLowerCase())) ||
-      (item.calibrationDate && item.calibrationDate.toString().toLowerCase().includes(filterText.toLowerCase())) ||
-      (item.receivedDate && item.receivedDate.toString().toLowerCase().includes(filterText.toLowerCase())) ||
-      (item.calibrationStatus.calibrationStatusCode && item.calibrationStatus.calibrationStatusCode.toLowerCase().includes(filterText.toLowerCase()))
+      (item.calibration.equipment.equipmentName && item.calibration.equipment.equipmentName.toLowerCase().includes(filterText.toLowerCase())) ||
+      (item.complainStatus.complainStatusName && item.complainStatus.complainStatusName.toLowerCase().includes(filterText.toLowerCase()))
   );
 
   // modal
   const [resultModal, setResultModal] = useState(false);
-  const [detailModal, setDetailModal] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState(false);
   const [forwardDialog, setForwardDialog] = useState(false);
+  const [detailModal, setDetailModal] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     severity: "success",
     message: ""
   });
+
+  const [complain, setComplain] = useState({});
   const [item, setItem] = useState({});
   const [certificate, setCertificate] = useState({
     certificateNumber: '',
@@ -55,6 +55,7 @@ const TypewriterComplain = () => {
     issuanceDate: new Date().toISOString().split('T')[0]
   });
   const [id, setId] = useState(null);
+  const [calibrationId, setCalibrationId] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleCertificateChange = (e) => {
@@ -65,7 +66,22 @@ const TypewriterComplain = () => {
   }
 
   const handleOpenResultModal = (item) => {
-    setId(item.id)
+    setId(item.id);
+    setCalibrationId(item.calibration.id);
+    setCertificate({
+      certificateNumber: item.calibration.certificateNumber,
+      calibrationLocation: item.calibration.calibrationLocation,
+      calibrationMethod: item.calibration.calibrationMethod,
+      envConditionTBefore: item.calibration.envConditionTBefore,
+      envConditionTAfter: item.calibration.envConditionTAfter,
+      envConditionRhBefore: item.calibration.envConditionRhBefore,
+      envConditionRhAfter: item.calibration.envConditionRhAfter,
+      standardName: item.calibration.standardName,
+      standardType: item.calibration.standardType,
+      standardSerialNumber: item.calibration.standardSerialNumber,
+      standardTraceableToSI: item.calibration.standardTraceableToSI,
+      issuanceDate: item.calibration.issuanceDate
+    })
     setResultModal(true);
   }
 
@@ -80,6 +96,7 @@ const TypewriterComplain = () => {
   }
 
   const handleCloseConfirmDialog = () => {
+    setItem({});
     setConfirmDialog(false);
   }
 
@@ -89,17 +106,20 @@ const TypewriterComplain = () => {
   }
 
   const handleCloseForwardDialog = () => {
+    setItem({});
     setForwardDialog(false);
   }
 
   const handleOpenDetailModal = (item) => {
-    setItem(item);
-    getCalibrationReport(item);
-    getPerformanceAssessment(item.id);
+    setComplain(item);
+    setItem(item.calibration);
+    getCalibrationReport(item.calibration.id);
+    getPerformanceAssessment(item.calibration.id);
     setDetailModal(true);
   }
 
   const handleCloseDetailModal = () => {
+    setComplain({});
     setItem({});
     setDetailModal(false);
   }
@@ -108,63 +128,10 @@ const TypewriterComplain = () => {
     setSnackbar(false);
   }
 
-  const getCalibrations = () => {
-    axios
-      .get(`${process.env.REACT_APP_BASE_URL}/calibration/find-by-typewriter-id/${cookies.auth.userProfile.id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
-      .then((response) => {
-        if (response.status === 200) {
-          setCalibrations(response.data);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const getCalibrationReport = (item) => {
-    axios
-      .get(`${process.env.REACT_APP_BASE_URL}/calibration-report/${item.id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
-      .then((response) => {
-        if (response.status === 200) {
-          setCalibrationReport(response.data);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const confirmCalibration = () => {
-    setLoading(true);
-    axios
-      .post(`${process.env.REACT_APP_BASE_URL}/calibration/confirm-by-typewriter/${id}`, null, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
-      .then((response) => {
-        if (response.status === 200) {
-          setSnackbar({
-            open: true,
-            severity: "success",
-            message: "Simpan data berhasil"
-          });
-          setLoading(false);
-          handleCloseConfirmDialog();
-          getCalibrations();
-        }
-      })
-      .catch((error) => {
-        setSnackbar({
-          open: true,
-          severity: "success",
-          message: error.response?.data
-        });
-        setLoading(false);
-        handleCloseConfirmDialog();
-      });
-  };
-
   const createCertificateCalibration = () => {
     setLoading(true);
     axios
-      .post(`${process.env.REACT_APP_BASE_URL}/certificate/${id}`, certificate, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .post(`${process.env.REACT_APP_BASE_URL}/certificate/${calibrationId}`, certificate, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
           setSnackbar({
@@ -172,9 +139,10 @@ const TypewriterComplain = () => {
             severity: "success",
             message: "Simpan data berhasil"
           });
+          doneByTypewriter();
           setLoading(false);
           handleCloseResultModal();
-          getCalibrations();
+          getComplains();
         }
       })
       .catch((error) => {
@@ -188,30 +156,29 @@ const TypewriterComplain = () => {
       });
   };
 
-  const forwardCalibration = () => {
-    setLoading(true);
+  const getComplains = () => {
     axios
-      .post(`${process.env.REACT_APP_BASE_URL}/calibration/forward-to-customer/${id}`, null,{ headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .get(`${process.env.REACT_APP_BASE_URL}/complain/find-all`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
-          setSnackbar({
-            open: true,
-            severity: "success",
-            message: "Simpan data berhasil"
-          });
-          setLoading(false);
-          handleCloseForwardDialog();
-          getCalibrations();
+          setComplains(response.data);
         }
       })
       .catch((error) => {
-        setSnackbar({
-          open: true,
-          severity: "error",
-          message: "Terjadi kesalahan!"
-        });
-        setLoading(false);
-        handleCloseForwardDialog();
+        console.log(error);
+      });
+  };
+
+  const getCalibrationReport = (id) => {
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/calibration-report/${id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setCalibrationReport(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
       });
   };
 
@@ -230,37 +197,91 @@ const TypewriterComplain = () => {
       });
   };
 
+  const confirmComplain = () => {
+    setLoading(true);
+    axios
+      .post(`${process.env.REACT_APP_BASE_URL}/complain/confirm-by-typewriter/${id}`, null, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setSnackbar({
+            open: true,
+            severity: "success",
+            message: "Simpan data berhasil"
+          });
+          setLoading(false);
+          handleCloseConfirmDialog();
+          getComplains();
+        }
+      })
+      .catch((error) => {
+        setSnackbar({
+          open: true,
+          severity: "success",
+          message: error.response?.data
+        });
+        setLoading(false);
+        handleCloseConfirmDialog();
+      });
+  };
+
+  const doneByTypewriter = () => {
+    setLoading(true);
+    axios
+      .post(`${process.env.REACT_APP_BASE_URL}/complain/done-by-typewriter/${id}`, null, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+      })
+      .catch((error) => {
+      });
+  };
+
+  const forwardComplain = () => {
+    setLoading(true);
+    axios
+      .post(`${process.env.REACT_APP_BASE_URL}/complain/forward-to-customer/${id}`, null, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setSnackbar({
+            open: true,
+            severity: "success",
+            message: "Simpan data berhasil"
+          });
+          setLoading(false);
+          handleCloseForwardDialog();
+          getComplains();
+        }
+      })
+      .catch((error) => {
+        setSnackbar({
+          open: true,
+          severity: "error",
+          message: "Terjadi kesalahan!"
+        });
+        setLoading(false);
+        handleCloseForwardDialog();
+      });
+  };
+
   useEffect(() => {
-    getCalibrations();
+    getComplains();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const columns = [
     {
-      name: 'Nomor Order',
-      selector: row => row.orderNumber,
+      name: 'Nomor Aduan',
+      selector: row => row.complainNumber,
       wrap: true,
       sortable: true
     },
     {
       name: 'Nama Peralatan',
-      selector: row => row.equipment.equipmentName,
+      selector: row => row.calibration.equipment.equipmentName,
       wrap: true,
       sortable: true
     },
     {
-      name: 'Tgl Order',
-      selector: row => (<Moment format="YYYY-MM-DD">{row.calibrationDate}</Moment>),
-      sortable: true
-    },
-    {
-      name: 'Tgl Diterima',
-      selector: row => row.receivedDate ? (<Moment format="YYYY-MM-DD">{row.receivedDate}</Moment>) : "",
-      sortable: true
-    },
-    {
       name: 'Status',
-      selector: row => row.calibrationStatus.calibrationStatusName,
+      selector: row => row.complainStatus.complainStatusName,
       wrap: true,
       sortable: true
     },
@@ -271,14 +292,14 @@ const TypewriterComplain = () => {
           <Button size="small" style={{ margin: '6px 3px 3px 0px' }}
             onClick={() => handleOpenConfirmDialog(row.id)}
             variant="contained"
-            disabled={row.calibrationStatus.calibrationStatusCode !== 'FORWARD_TO_CERTIFICATE'}
+            disabled={row.complainStatus.complainStatusCode !== 'FORWARD_TO_CERTIFICATE'}
             color="success">
             Konfirmasi
           </Button>
           <Button size="small" style={{ margin: '6px 3px 3px 3px' }}
             onClick={() => handleOpenResultModal(row)}
             variant="contained"
-            disabled={row.calibrationStatus.calibrationStatusCode !== 'IN_PROGRESS_BY_CERTIFICATE'}
+            disabled={row.complainStatus.complainStatusCode !== 'IN_PROGRESS_BY_CERTIFICATE'}
             color="info">
             Catat
           </Button>
@@ -292,7 +313,7 @@ const TypewriterComplain = () => {
           <Button size="small" style={{ margin: '3px 3px 6px 3px' }}
             onClick={() => handleOpenForwardDialog(row.id)}
             variant="contained"
-            disabled={row.calibrationStatus.calibrationStatusCode !== 'DONE_BY_CERTIFICATE'}
+            disabled={row.complainStatus.complainStatusCode !== 'DONE_BY_CERTIFICATE'}
             color="warning">
             Teruskan
           </Button>
@@ -374,7 +395,7 @@ const TypewriterComplain = () => {
           <CardContent>
             <Grid container>
               <Grid item sm={8} md={10} lg={10}>
-                <Typography variant="h3">Daftar Kalibrasi</Typography>
+                <Typography variant="h3">Daftar Aduan Kalibrasi</Typography>
               </Grid>
             </Grid>
 
@@ -497,7 +518,7 @@ const TypewriterComplain = () => {
                 </Grid>
               </Grid>
 
-              <Divider sx={{ mt: '10px', mb: '25px' }}/>
+              <Divider sx={{ mt: '10px', mb: '25px' }} />
 
               <Grid container spacing={2}>
                 <Grid item sm={6} md={6} lg={6}>
@@ -558,7 +579,7 @@ const TypewriterComplain = () => {
                 </Grid>
               </Grid>
 
-              <Divider sx={{ mt: '10px', mb: '25px' }}/>
+              <Divider sx={{ mt: '10px', mb: '25px' }} />
 
               <Grid container spacing={2}>
                 <Grid item sm={6} md={6} lg={6}>
@@ -783,11 +804,11 @@ const TypewriterComplain = () => {
                       secondary={item.calibrationLocation ? item.calibrationLocation : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary={`Kondisi T sebelum (` + String.fromCharCode(176) + `c)`}
+                    <ListItemText primary="Kondisi T sebelum"
                       secondary={item.envConditionTBefore ? item.envConditionTBefore : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi RH sebelum (%)"
+                    <ListItemText primary="Kondisi RH sebelum"
                       secondary={item.envConditionRhBefore ? item.envConditionRhBefore : '-'} />
                   </ListItem>
                 </List>
@@ -800,11 +821,11 @@ const TypewriterComplain = () => {
                       secondary={item.calibrationMethod ? item.calibrationMethod : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary={`Kondisi T setelah (` + String.fromCharCode(176) + `c)`}
+                    <ListItemText primary="Kondisi T setelah"
                       secondary={item.envConditionTAfter ? item.envConditionTAfter : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi RH setelah (%)"
+                    <ListItemText primary="Kondisi RH setelah"
                       secondary={item.envConditionRhAfter ? item.envConditionRhAfter : '-'} />
                   </ListItem>
                 </List>
@@ -940,7 +961,32 @@ const TypewriterComplain = () => {
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
                     <ListItemText primary="Catatan Pelanggan"
-                      secondary={performanceAssessment.performanceAssessmentNote ? item.performanceAssessmentNote : '-'} />
+                      secondary={performanceAssessment.performanceAssessmentNote ? performanceAssessment.performanceAssessmentNote : '-'} />
+                  </ListItem>
+                </List>
+              </Grid>
+            </Grid>
+
+            <Divider />
+
+            <Grid container>
+              <Grid item md={6}>
+                <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                  <ListItem>
+                    <ListItemText primary="Nomor Aduan"
+                      secondary={complain.complainNumber ? complain.complainNumber : '-'} />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText primary="Catatan Aduan"
+                      secondary={complain.complainNote ? complain.complainNote : '-'} />
+                  </ListItem>
+                </List>
+              </Grid>
+              <Grid item md={6}>
+                <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                  <ListItem>
+                    <ListItemText primary="Jenis Aduan"
+                      secondary={complain.complainType?.complainTypeName ? complain.complainType?.complainTypeName : '-'} />
                   </ListItem>
                 </List>
               </Grid>
@@ -957,16 +1003,16 @@ const TypewriterComplain = () => {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle fontSize={16} id="alert-dialog-title">
-          Konfirmasi mulai pencatatan sertifikat kalibrasi
+          Konfirmasi mulai pencatatan aduan kalibrasi
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            {`Anda yakin mau memulai pencatatan sertifikat kalibrasi ?`}
+            {`Anda yakin mau memulai pencatatan aduan kalibrasi ?`}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseConfirmDialog}>No</Button>
-          <Button onClick={confirmCalibration} autoFocus>
+          <Button onClick={confirmComplain} autoFocus>
             Yes
           </Button>
         </DialogActions>
@@ -979,16 +1025,16 @@ const TypewriterComplain = () => {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle fontSize={16} id="alert-dialog-title">
-          Konfirmasi penyelesaian proses kalibrasi
+          Konfirmasi penyelesaian aduan kalibrasi
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            {`Anda yakin mau meneruskan proses kalibrasi kepada pelanggan ?`}
+            {`Anda yakin mau meneruskan aduan kalibrasi kepada pelanggan ?`}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseForwardDialog}>No</Button>
-          <Button onClick={forwardCalibration} autoFocus>
+          <Button onClick={forwardComplain} autoFocus>
             Yes
           </Button>
         </DialogActions>

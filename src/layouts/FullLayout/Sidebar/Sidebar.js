@@ -17,6 +17,7 @@ import AdminSidebar from "./AdminSidebar";
 import { useCookies } from "react-cookie";
 import TechnicianSidebar from "./TechnicianSidebar";
 import TypewriterSidebar from "./TypewriterSidebar";
+import QualitySidebar from "./QualitySidebar";
 
 const Sidebar = (props) => {
   const [open, setOpen] = React.useState(true);
@@ -36,14 +37,16 @@ const Sidebar = (props) => {
   };
 
   useEffect(() => {
-    if (cookies.auth.role.roleName === 'Customer') {
+    if (cookies.auth?.role?.roleName === 'Customer') {
       setMenuItems(CustomerSidebar);
-    } else if (cookies.auth.userProfile?.jobPosition?.jobPositionName === 'Admin') {
+    } else if (cookies.auth?.userProfile?.jobPosition?.jobPositionName === 'Admin') {
       setMenuItems(AdminSidebar);
-    } else if (cookies.auth.userProfile?.jobPosition?.jobPositionName === 'Technician') {
+    } else if (cookies.auth?.userProfile?.jobPosition?.jobPositionName === 'Technician') {
       setMenuItems(TechnicianSidebar);
-    } else if (cookies.auth.userProfile?.jobPosition?.jobPositionName === 'Certificate') {
+    } else if (cookies.auth?.userProfile?.jobPosition?.jobPositionName === 'Certificate') {
       setMenuItems(TypewriterSidebar);
+    } else if (cookies.auth?.userProfile?.jobPosition?.jobPositionName === 'Quality') {
+      setMenuItems(QualitySidebar);
     } else {
       setMenuItems([]);
     }
