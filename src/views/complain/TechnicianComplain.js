@@ -192,7 +192,7 @@ const TechnicianComplain = () => {
 
   const getComplains = () => {
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/complain/find-all`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .get(`${process.env.REACT_APP_BASE_URL}/complain/find-by-technician-id/${cookies.auth.userProfile.id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
           setComplains(response.data);

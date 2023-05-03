@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { Card, CardContent, Box, Typography, Modal, Button, TextField, Divider, Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, CircularProgress } from "@material-ui/core";
+import { Card, CardContent, Box, Typography, Modal, Button, TextField, Divider, Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, CircularProgress, MenuItem } from "@material-ui/core";
 
 import DataTable from "react-data-table-component";
 import axios from "axios";
@@ -10,16 +10,23 @@ import FilterComponent from "../../components/filter/FIlterComponent";
 const Employee = () => {
   // eslint-disable-next-line no-unused-vars
   const [cookies, setCookies] = useCookies({});
-  const [equipments, setEquipments] = useState([]);
+  const [employees, setEmployess] = useState([]);
+  const [education, setEducation] = useState([]);
+  const [jobPosition, setJobPosition] = useState([]);
 
   // filter
   const [filterText, setFilterText] = useState('');
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
-  const filteredItems = equipments.filter((o) => {
-    return Object.keys(o).some((k) => {
-      return o[k].toString().toLowerCase().indexOf(filterText.toLowerCase()) !== -1;
-    })
-  });
+  const filteredItems = employees.filter(
+    (item) =>
+      (item.nip && item.nip.toLowerCase().includes(filterText.toLowerCase())) ||
+      (item.employeeName && item.employeeName.toLowerCase().includes(filterText.toLowerCase())) ||
+      (item.email && item.email.toLowerCase().includes(filterText.toLowerCase())) ||
+      (item.phoneNumber && item.phoneNumber.toLowerCase().includes(filterText.toLowerCase())) ||
+      (item.address && item.address.toLowerCase().includes(filterText.toLowerCase())) ||
+      (item.education.educationName && item.education.educationName.toLowerCase().includes(filterText.toLowerCase())) ||
+      (item.jobPosition.jobPositionName && item.jobPosition.jobPositionName.toLowerCase().includes(filterText.toLowerCase()))
+  );
 
   // modal
   const [createModal, setCreateModal] = useState(false);
@@ -30,15 +37,25 @@ const Employee = () => {
     severity: "success",
     message: ""
   });
-  const [item, setItem] = useState({});
+  const [item, setItem] = useState({
+    nip: '',
+    employeeName: '',
+    email: '',
+    phoneNumber: '',
+    address: '',
+    educationId: 1,
+    jobPositionId: 1
+  });
   const [body, setBody] = useState({
-    equipmentName: '',
-    capacity: 0,
-    manufacturer: '',
-    graduation: 0,
-    modelType: '',
-    serialNumber: '',
-    customerId: cookies.auth.userProfile.id
+    nip: '',
+    employeeName: '',
+    email: '',
+    phoneNumber: '',
+    address: '',
+    educationId: 1,
+    jobPositionId: 1,
+    username: '',
+    password: ''
   });
   const [id, setId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -58,6 +75,8 @@ const Employee = () => {
   }
 
   const handleOpenCreateModal = () => {
+    getEducation();
+    getJobPosition();
     setCreateModal(true);
   }
 
@@ -66,7 +85,17 @@ const Employee = () => {
   }
 
   const handleOpenUpdateModal = (item) => {
-    setItem(item);
+    getEducation();
+    getJobPosition();
+    setItem({
+      nip: item.nip,
+      employeeName: item.employeeName,
+      email: item.email,
+      phoneNumber: item.phoneNumber,
+      address: item.address,
+      educationId: item.education.id,
+      jobPositionId: item.jobPosition.id
+    });
     setUpdateModal(true);
   }
 
@@ -95,7 +124,7 @@ const Employee = () => {
       .get(`${process.env.REACT_APP_BASE_URL}/employee/find-all`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
-          setEquipments(response.data);
+          setEmployess(response.data);
         }
       })
       .catch((error) => {
@@ -103,11 +132,37 @@ const Employee = () => {
       });
   };
 
-  const createEquipment = (e) => {
+  const getEducation = () => {
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/education/find-all`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setEducation(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const getJobPosition = () => {
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/job-position/find-all`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setJobPosition(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const createEmployee = (e) => {
     e.preventDefault();
     setLoading(true);
     axios
-      .post(`${process.env.REACT_APP_BASE_URL}/equipment`, body ,{ headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .post(`${process.env.REACT_APP_BASE_URL}/employee/create`, body, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 201) {
           setSnackbar({
@@ -241,7 +296,7 @@ const Employee = () => {
             Ubah
           </Button>
           <Button size="small"
-          onClick={() => handleOpenDeleteDialog(row.id)}
+            onClick={() => handleOpenDeleteDialog(row.id)}
             variant="contained"
             color="error">
             Hapus
@@ -310,7 +365,7 @@ const Employee = () => {
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: '40%',
+    width: '50%',
     bgcolor: 'background.paper',
     boxShadow: 24,
     p: 4,
@@ -387,16 +442,19 @@ const Employee = () => {
           <CardContent
             sx={{
               padding: "30px",
+              maxHeight: 600,
+              overflow: 'auto'
             }}
           >
             <form>
               <TextField
-                id="equipment-name"
-                label="Nama Peralatan"
+                id="nip"
+                label="Nomor Induk Pegawai"
                 variant="outlined"
-                placeholder="Nama Peralatan"
+                placeholder="Nomor Induk Pegawai"
                 type="text"
-                name="equipmentName"
+                name="nip"
+                value={body.nip}
                 onChange={handleCreateChange}
                 fullWidth
                 sx={{
@@ -404,12 +462,13 @@ const Employee = () => {
                 }}
               />
               <TextField
-                id="manufacturer"
-                label="Manufacturer"
+                id="employee-name"
+                label="Nama Karyawan"
                 variant="outlined"
-                placeholder="Manufacturer"
+                placeholder="Nama Karyawan"
                 type="text"
-                name="manufacturer"
+                name="employeeName"
+                value={body.employeeName}
                 onChange={handleCreateChange}
                 fullWidth
                 sx={{
@@ -417,12 +476,13 @@ const Employee = () => {
                 }}
               />
               <TextField
-                id="capacity"
-                label="Kapasitas"
+                id="email"
+                label="Email"
                 variant="outlined"
-                placeholder="Kapasitas"
-                type="number"
-                name="capacity"
+                placeholder="Email"
+                type="email"
+                name="email"
+                value={body.email}
                 onChange={handleCreateChange}
                 fullWidth
                 sx={{
@@ -430,25 +490,13 @@ const Employee = () => {
                 }}
               />
               <TextField
-                id="graduation"
-                label="Graduation"
+                id="phone-number"
+                label="No. Telepon"
                 variant="outlined"
-                placeholder="Graduation"
-                type="number"
-                name="graduation"
-                onChange={handleCreateChange}
-                fullWidth
-                sx={{
-                  mb: 2,
-                }}
-              />
-              <TextField
-                id="model-type"
-                label="Model Type"
-                variant="outlined"
-                placeholder="Model Type"
+                placeholder="No. Telepon"
                 type="text"
-                name="modelType"
+                name="phoneNumber"
+                value={body.phoneNumber}
                 onChange={handleCreateChange}
                 fullWidth
                 sx={{
@@ -456,12 +504,83 @@ const Employee = () => {
                 }}
               />
               <TextField
-                id="serial-number"
-                label="Serial Number"
+                id="address"
+                label="Alamat"
                 variant="outlined"
-                placeholder="Serial Number"
+                placeholder="Alamat"
                 type="text"
-                name="serialNumber"
+                name="address"
+                value={body.address}
+                multiline
+                rows={2}
+                onChange={handleCreateChange}
+                fullWidth
+                sx={{
+                  mb: 2,
+                }}
+              />
+              <TextField
+                fullWidth
+                id="education-id"
+                variant="outlined"
+                select
+                value={body.educationId}
+                onChange={handleCreateChange}
+                name="educationId"
+                label="Pendidikan"
+                sx={{
+                  mb: 2,
+                }}
+              >
+                {education.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.educationName}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                fullWidth
+                id="standard-select-number"
+                variant="outlined"
+                select
+                value={body.jobPositionId}
+                onChange={handleCreateChange}
+                name="jobPositionId"
+                label="Jabatan"
+                sx={{
+                  mb: 2,
+                }}
+              >
+                {jobPosition.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.jobPositionName}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <Divider />
+              <br />
+              <TextField
+                id="username"
+                label="Username"
+                variant="outlined"
+                placeholder="Username"
+                type="text"
+                name="username"
+                value={body.username}
+                onChange={handleCreateChange}
+                fullWidth
+                sx={{
+                  mb: 2,
+                }}
+              />
+              <TextField
+                id="password"
+                label="Password"
+                variant="outlined"
+                placeholder="Password"
+                type="password"
+                name="password"
+                value={body.password}
                 onChange={handleCreateChange}
                 fullWidth
                 sx={{
@@ -469,11 +588,11 @@ const Employee = () => {
                 }}
               />
               <div>
-                <Button onClick={createEquipment} 
-                  fullWidth color="primary" 
+                <Button onClick={createEmployee}
+                  fullWidth color="primary"
                   size="large" variant="contained"
                   disabled={loading}>
-                {loading ? <CircularProgress size={26} color="inherit" /> : "Simpan"}
+                  {loading ? <CircularProgress size={26} color="inherit" /> : "Simpan"}
                 </Button>
               </div>
             </form>
@@ -514,17 +633,19 @@ const Employee = () => {
           <CardContent
             sx={{
               padding: "30px",
+              maxHeight: 600,
+              overflow: 'auto'
             }}
           >
             <form>
               <TextField
-                id="equipment-name"
-                label="Nama Peralatan"
+                id="nip"
+                label="Nomor Induk Pegawai"
                 variant="outlined"
-                placeholder="Nama Peralatan"
+                placeholder="Nomor Induk Pegawai"
                 type="text"
-                name="equipmentName"
-                value={item.equipmentName}
+                name="nip"
+                value={item.nip}
                 onChange={handleUpdateChange}
                 fullWidth
                 sx={{
@@ -532,13 +653,13 @@ const Employee = () => {
                 }}
               />
               <TextField
-                id="manufacturer"
-                label="Manufacturer"
+                id="employee-name"
+                label="Nama Karyawan"
                 variant="outlined"
-                placeholder="Manufacturer"
+                placeholder="Nama Karyawan"
                 type="text"
-                name="manufacturer"
-                value={item.manufacturer}
+                name="employeeName"
+                value={item.employeeName}
                 onChange={handleUpdateChange}
                 fullWidth
                 sx={{
@@ -546,13 +667,13 @@ const Employee = () => {
                 }}
               />
               <TextField
-                id="capacity"
-                label="Kapasitas"
+                id="email"
+                label="Email"
                 variant="outlined"
-                placeholder="Kapasitas"
-                type="number"
-                name="capacity"
-                value={item.capacity}
+                placeholder="Email"
+                type="email"
+                name="email"
+                value={item.email}
                 onChange={handleUpdateChange}
                 fullWidth
                 sx={{
@@ -560,27 +681,13 @@ const Employee = () => {
                 }}
               />
               <TextField
-                id="graduation"
-                label="Graduation"
+                id="phone-number"
+                label="No. Telepon"
                 variant="outlined"
-                placeholder="Graduation"
-                type="number"
-                name="graduation"
-                value={item.graduation}
-                onChange={handleUpdateChange}
-                fullWidth
-                sx={{
-                  mb: 2,
-                }}
-              />
-              <TextField
-                id="model-type"
-                label="Model Type"
-                variant="outlined"
-                placeholder="Model Type"
+                placeholder="No. Telepon"
                 type="text"
-                name="modelType"
-                value={item.modelType}
+                name="phoneNumber"
+                value={item.phoneNumber}
                 onChange={handleUpdateChange}
                 fullWidth
                 sx={{
@@ -588,22 +695,62 @@ const Employee = () => {
                 }}
               />
               <TextField
-                id="serial-number"
-                label="Serial Number"
+                id="address"
+                label="Alamat"
                 variant="outlined"
-                placeholder="Serial Number"
+                placeholder="Alamat"
                 type="text"
-                name="serialNumber"
-                value={item.serialNumber}
+                name="address"
+                value={item.address}
+                multiline
+                rows={2}
                 onChange={handleUpdateChange}
                 fullWidth
                 sx={{
                   mb: 2,
                 }}
               />
+              <TextField
+                fullWidth
+                id="education-id"
+                variant="outlined"
+                select
+                value={item.educationId}
+                onChange={handleUpdateChange}
+                name="educationId"
+                label="Pendidikan"
+                sx={{
+                  mb: 2,
+                }}
+              >
+                {education.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.educationName}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                fullWidth
+                id="standard-select-number"
+                variant="outlined"
+                select
+                value={body.jobPositionId}
+                onChange={handleCreateChange}
+                name="jobPositionId"
+                label="Jabatan"
+                sx={{
+                  mb: 2,
+                }}
+              >
+                {jobPosition.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.jobPositionName}
+                  </MenuItem>
+                ))}
+              </TextField>
               <div>
-                <Button onClick={updateEquipment} 
-                  fullWidth color="primary" 
+                <Button onClick={updateEquipment}
+                  fullWidth color="primary"
                   size="large" variant="contained"
                   disabled={loading}>
                   {loading ? <CircularProgress size={26} color="inherit" /> : "Ubah"}
@@ -636,9 +783,9 @@ const Employee = () => {
         </DialogActions>
       </Dialog>
 
-      <Snackbar open={snackbar.open} 
+      <Snackbar open={snackbar.open}
         autoHideDuration={5000}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }} 
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         onClose={handleCloseSnackbar}>
         <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
           {snackbar.message}
