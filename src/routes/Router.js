@@ -7,6 +7,11 @@ const FullLayout = lazy(() => import("../layouts/FullLayout/FullLayout.js"));
 
 /*****Pages******/
 const Dashboard1 = lazy(() => import("../views/dashboards/Dashboard1"));
+const CustomerDashboard = lazy(() => import("../views/dashboard/CustomerDashboard"));
+const AdminDashboard = lazy(() => import("../views/dashboard/AdminDashboard"));
+const TechnicianDashboard = lazy(() => import("../views/dashboard/TechnicianDashboard"));
+const TypewriterDashboard = lazy(() => import("../views/dashboard/TypewriterDashboard"));
+const QualityDashboard = lazy(() => import("../views/dashboard/QualityDashboard"));
 const Login = lazy(() => import("../views/login/Login"));
 const Equipment = lazy(() => import("../views/equipment/Equipement"));
 const Employee = lazy(() => import("../views/employee/Employee"));
@@ -42,6 +47,11 @@ const ThemeRoutes = [
       { path: "/main/technician/complain", element: <TechnicianComplain /> },
       { path: "/main/typewriter/complain", element: <TypewriterComplain /> },
       { path: "/main/dashboards/dashboard1", exact: true, element: <Dashboard1 /> },
+      { path: "/main/dashboard/customer-dashboard", exact: true, element: <CustomerDashboard /> },
+      { path: "/main/dashboard/admin-dashboard", exact: true, element: <AdminDashboard /> },
+      { path: "/main/dashboard/technician-dashboard", exact: true, element: <TechnicianDashboard /> },
+      { path: "/main/dashboard/typewriter-dashboard", exact: true, element: <TypewriterDashboard /> },
+      { path: "/main/dashboard/quality-dashboard", exact: true, element: <QualityDashboard /> }
     ],
   },
   {

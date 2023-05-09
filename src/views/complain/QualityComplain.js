@@ -56,7 +56,7 @@ const QualityComplain = () => {
   const forwardType = [
     {
       id: 1,
-      label: 'Tekhnisi'
+      label: 'Teknisi'
     },
     {
       id: 2,

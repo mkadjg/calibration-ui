@@ -88,6 +88,7 @@ const Employee = () => {
     getEducation();
     getJobPosition();
     setItem({
+      id: item.id,
       nip: item.nip,
       employeeName: item.employeeName,
       email: item.email,
@@ -104,10 +105,10 @@ const Employee = () => {
     setUpdateModal(false);
   }
 
-  const handleOpenDeleteDialog = (id) => {
-    setId(id);
-    setDeleteDialog(true);
-  }
+  // const handleOpenDeleteDialog = (id) => {
+  //   setId(id);
+  //   setDeleteDialog(true);
+  // }
 
   const handleCloseDeleteDialog = () => {
     setId(null);
@@ -186,12 +187,11 @@ const Employee = () => {
       });
   };
 
-  const updateEquipment = (e) => {
+  const updateEmployee = (e) => {
     setLoading(true);
     e.preventDefault();
-    item.customerId = cookies.auth.userProfile.id;
     axios
-      .put(`${process.env.REACT_APP_BASE_URL}/equipment/${item.id}`, item, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .put(`${process.env.REACT_APP_BASE_URL}/employee/${item.id}`, item, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
           setSnackbar({
@@ -215,9 +215,9 @@ const Employee = () => {
       });
   };
 
-  const deleteEquipment = () => {
+  const deleteEmployee = () => {
     axios
-      .delete(`${process.env.REACT_APP_BASE_URL}/equipment/${id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .delete(`${process.env.REACT_APP_BASE_URL}/employee/${id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
       .then((response) => {
         if (response.status === 200) {
           setSnackbar({
@@ -295,15 +295,15 @@ const Employee = () => {
             color="success">
             Ubah
           </Button>
-          <Button size="small"
+          {/* <Button size="small"
             onClick={() => handleOpenDeleteDialog(row.id)}
             variant="contained"
             color="error">
             Hapus
-          </Button>
+          </Button> */}
         </>
       ),
-      width: '200px'
+      width: '100px'
     },
   ];
 
@@ -734,7 +734,7 @@ const Employee = () => {
                 id="standard-select-number"
                 variant="outlined"
                 select
-                value={body.jobPositionId}
+                value={item.jobPositionId}
                 onChange={handleCreateChange}
                 name="jobPositionId"
                 label="Jabatan"
@@ -749,7 +749,7 @@ const Employee = () => {
                 ))}
               </TextField>
               <div>
-                <Button onClick={updateEquipment}
+                <Button onClick={updateEmployee}
                   fullWidth color="primary"
                   size="large" variant="contained"
                   disabled={loading}>
@@ -777,7 +777,7 @@ const Employee = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDeleteDialog}>No</Button>
-          <Button onClick={deleteEquipment} autoFocus>
+          <Button onClick={deleteEmployee} autoFocus>
             Yes
           </Button>
         </DialogActions>

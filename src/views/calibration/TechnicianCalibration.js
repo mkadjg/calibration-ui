@@ -44,8 +44,12 @@ const TechnicianCalibration = () => {
   const [result, setResult] = useState([]);
   const [report, setReport] = useState({
     uncertainly: 0,
-    convidenceLevel: 0,
+    confidenceLevel: 0,
     coverageFactor: 0,
+    envConditionTBefore: 0,
+    envConditionTAfter: 0,
+    envConditionRhBefore: 0,
+    envConditionRhAfter: 0,
     result: []
   });
   const [forward, setForward] = useState({
@@ -493,6 +497,8 @@ const TechnicianCalibration = () => {
           <CardContent
             sx={{
               padding: "30px",
+              maxHeight: 600,
+              overflow: 'auto'
             }}
           >
             <form>
@@ -608,6 +614,71 @@ const TechnicianCalibration = () => {
               </Card>
 
               <Grid container spacing={2}>
+                <Grid item sm={6} md={6} lg={6}>
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Kondisi T sebelum"
+                    placeholder="Kondisi T sebelum"
+                    rows={4}
+                    variant="outlined"
+                    type="number"
+                    fullWidth
+                    size="small"
+                    name="envConditionTBefore"
+                    value={report.envConditionTBefore}
+                    onChange={handleReportChange}
+                    sx={{ mb: 2 }}
+                  />
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Kondisi T setelah"
+                    placeholder="Kondisi T setelah"
+                    rows={4}
+                    variant="outlined"
+                    type="number"
+                    fullWidth
+                    size="small"
+                    name="envConditionTAfter"
+                    value={report.envConditionTAfter}
+                    onChange={handleReportChange}
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+                <Grid item sm={6} md={6} lg={6}>
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Kondisi RH sebelum"
+                    placeholder="Kondisi RH sebelum"
+                    rows={4}
+                    variant="outlined"
+                    type="number"
+                    fullWidth
+                    size="small"
+                    name="envConditionRhBefore"
+                    value={report.envConditionRhBefore}
+                    onChange={handleReportChange}
+                    sx={{ mb: 2 }}
+                  />
+                  <TextField
+                    id="outlined-multiline-static"
+                    label="Kondisi RH setelah"
+                    placeholder="Kondisi RH setelah"
+                    rows={4}
+                    variant="outlined"
+                    type="number"
+                    fullWidth
+                    size="small"
+                    name="envConditionRhAfter"
+                    value={report.envConditionRhAfter}
+                    onChange={handleReportChange}
+                    sx={{ mb: 2 }}
+                  />
+                </Grid>
+              </Grid>
+
+              <Divider sx={{ mt: '10px', mb: '25px' }}/>
+
+              <Grid container spacing={2}>
                 <Grid item sm={4} md={4} lg={4}>
                   <TextField
                     id="outlined-multiline-static"
@@ -635,8 +706,8 @@ const TechnicianCalibration = () => {
                     variant="outlined"
                     type="number"
                     fullWidth
-                    name="convidenceLevel"
-                    value={report.convidenceLevel}
+                    name="confidenceLevel"
+                    value={report.confidenceLevel}
                     onChange={handleReportChange}
                     sx={{ mb: 2 }}
                     inputProps={{ min: 0, style: { textAlign: 'center' } }}

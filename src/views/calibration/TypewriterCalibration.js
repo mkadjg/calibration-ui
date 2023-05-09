@@ -44,10 +44,6 @@ const TypewriterCalibration = () => {
     certificateNumber: '',
     calibrationLocation: '',
     calibrationMethod: '',
-    envConditionTBefore: 0,
-    envConditionTAfter: 0,
-    envConditionRhBefore: 0,
-    envConditionRhAfter: 0,
     standardName: '',
     standardType: '',
     standardSerialNumber: '',
@@ -491,67 +487,6 @@ const TypewriterCalibration = () => {
                     fullWidth
                     name="issuanceDate"
                     value={certificate.issuanceDate}
-                    onChange={handleCertificateChange}
-                    sx={{ mb: 2 }}
-                  />
-                </Grid>
-              </Grid>
-
-              <Divider sx={{ mt: '10px', mb: '25px' }}/>
-
-              <Grid container spacing={2}>
-                <Grid item sm={6} md={6} lg={6}>
-                  <TextField
-                    id="outlined-multiline-static"
-                    label="Kondisi T sebelum"
-                    placeholder="Kondisi T sebelum"
-                    rows={4}
-                    variant="outlined"
-                    type="number"
-                    fullWidth
-                    name="envConditionTBefore"
-                    value={certificate.envConditionTBefore}
-                    onChange={handleCertificateChange}
-                    sx={{ mb: 2 }}
-                  />
-                  <TextField
-                    id="outlined-multiline-static"
-                    label="Kondisi T setelah"
-                    placeholder="Kondisi T setelah"
-                    rows={4}
-                    variant="outlined"
-                    type="number"
-                    fullWidth
-                    name="envConditionTAfter"
-                    value={certificate.envConditionTAfter}
-                    onChange={handleCertificateChange}
-                    sx={{ mb: 2 }}
-                  />
-                </Grid>
-                <Grid item sm={6} md={6} lg={6}>
-                  <TextField
-                    id="outlined-multiline-static"
-                    label="Kondisi RH sebelum"
-                    placeholder="Kondisi RH sebelum"
-                    rows={4}
-                    variant="outlined"
-                    type="number"
-                    fullWidth
-                    name="envConditionRhBefore"
-                    value={certificate.envConditionRhBefore}
-                    onChange={handleCertificateChange}
-                    sx={{ mb: 2 }}
-                  />
-                  <TextField
-                    id="outlined-multiline-static"
-                    label="Kondisi RH setelah"
-                    placeholder="Kondisi RH setelah"
-                    rows={4}
-                    variant="outlined"
-                    type="number"
-                    fullWidth
-                    name="envConditionRhAfter"
-                    value={certificate.envConditionRhAfter}
                     onChange={handleCertificateChange}
                     sx={{ mb: 2 }}
                   />

@@ -9,7 +9,7 @@ const CustomerSidebar = [
   {
     title: "Dashboard",
     icon: DashboardOutlined,
-    href: "/main/dashboards/dashboard1",
+    href: "/main/dashboard/customer-dashboard",
   },
   {
     title: "Peralatan",

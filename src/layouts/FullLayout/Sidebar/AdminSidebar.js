@@ -8,7 +8,7 @@ const AdminSidebar = [
   {
     title: "Dashboard",
     icon: DashboardOutlined,
-    href: "/main/dashboards/dashboard1",
+    href: "/main/dashboard/admin-dashboard",
   },
   {
     title: "Kalibrasi",

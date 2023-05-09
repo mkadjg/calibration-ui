@@ -8,7 +8,7 @@ const TypewriterSidebar = [
   {
     title: "Dashboard",
     icon: DashboardOutlined,
-    href: "/main/dashboards/dashboard1",
+    href: "/main/dashboard/typewriter-dashboard",
   },
   {
     title: "Kalibrasi",

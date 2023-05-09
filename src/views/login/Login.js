@@ -69,7 +69,17 @@ const Login = () => {
         if (response.status === 200) {
           setLoading(false);
           setCookies('auth', response.data, { path: '/' });
-          navigate("/main/dashboards/dashboard1");
+          if (response.data.role?.roleName === 'Customer') {
+            navigate("/main/dashboard/customer-dashboard");
+          } else if (response.data.userProfile?.jobPosition?.jobPositionName === 'Admin') {
+            navigate("/main/dashboard/admin-dashboard");
+          } else if (response.data.userProfile?.jobPosition?.jobPositionName === 'Technician') {
+            navigate("/main/dashboard/technician-dashboard");
+          } else if (response.data.userProfile?.jobPosition?.jobPositionName === 'Certificate') {
+            navigate("/main/dashboard/typewriter-dashboard");
+          } else if (response.data.userProfile?.jobPosition?.jobPositionName === 'Quality') {
+            navigate("/main/dashboard/quality-dashboard");
+          }
         } else {
           setLoading(false);
           setAlert({

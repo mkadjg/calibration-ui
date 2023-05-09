@@ -7,7 +7,7 @@ const QualitySidebar = [
   {
     title: "Dashboard",
     icon: DashboardOutlined,
-    href: "/main/dashboards/dashboard1",
+    href: "/main/dashboard/quality-dashboard",
   },
   {
     title: "Aduan",

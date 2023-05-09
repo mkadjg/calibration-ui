@@ -8,7 +8,7 @@ const TechnicianSidebar = [
   {
     title: "Dashboard",
     icon: DashboardOutlined,
-    href: "/main/dashboards/dashboard1",
+    href: "/main/dashboard/technician-dashboard",
   },
   {
     title: "Kalibrasi",
