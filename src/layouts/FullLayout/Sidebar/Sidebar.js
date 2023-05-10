@@ -9,9 +9,11 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  Avatar,
 } from "@material-ui/core";
 import { SidebarWidth } from "../../../assets/global/Theme-variable";
 import LogoIcon from "../Logo/LogoIcon";
+import logo from "./../../../assets/images/logo-quality.jpeg";
 import CustomerSidebar from "./CustomerSidebar";
 import AdminSidebar from "./AdminSidebar";
 import { useCookies } from "react-cookie";
@@ -50,14 +52,19 @@ const Sidebar = (props) => {
     } else {
       setMenuItems([]);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const SidebarContent = (
     <Box sx={{ p: 3, height: "calc(100vh - 40px)" }}>
       <Link to="/">
-        <Box sx={{ display: "flex", alignItems: "Center" }}>
-          <LogoIcon />
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Avatar
+            alt="logo"
+            src={logo}
+            sx={{ width: '50%', height: '50%' }}
+            variant="rounded"
+          />
         </Box>
       </Link>
 

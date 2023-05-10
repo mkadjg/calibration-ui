@@ -12,12 +12,14 @@ import {
   CircularProgress,
   Alert,
   Link,
+  Avatar,
 } from "@material-ui/core";
 import Footer from "./../../layouts/FullLayout/Footer/Footer";
 import { TopbarHeight } from "../../assets/global/Theme-variable";
 import axios from "axios";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
+import logo from "./../../assets/images/logo-quality.jpeg";
 
 const MainWrapper = experimentalStyled("div")(({ theme }) => ({
   display: "flex",
@@ -104,8 +106,14 @@ const Login = () => {
     <MainWrapper>
       <PageWrapper>
         <Container>
+          <Avatar
+            alt="logo"
+            src={logo}
+            sx={{ width: 280, height: 125, marginLeft: '38%', marginRight: '38%' }}
+            variant="square"
+          />
           <Card
-            style={{ marginTop: '8%', marginLeft: '28%', marginRight: '28%' }}
+            style={{ marginTop: '2%', marginLeft: '28%', marginRight: '28%' }}
             variant="outlined"
             sx={{
               p: 0,
