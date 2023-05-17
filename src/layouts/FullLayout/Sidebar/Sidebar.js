@@ -12,7 +12,6 @@ import {
   Avatar,
 } from "@material-ui/core";
 import { SidebarWidth } from "../../../assets/global/Theme-variable";
-import LogoIcon from "../Logo/LogoIcon";
 import logo from "./../../../assets/images/logo-quality.jpeg";
 import CustomerSidebar from "./CustomerSidebar";
 import AdminSidebar from "./AdminSidebar";
