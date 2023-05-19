@@ -222,6 +222,7 @@ const TechnicianCalibration = () => {
             severity: "success",
             message: "Simpan data berhasil"
           });
+          doneByTechnician();
           setLoading(false);
           handleCloseResultModal();
           getCalibrations();
@@ -235,6 +236,16 @@ const TechnicianCalibration = () => {
         });
         setLoading(false);
         handleCloseResultModal();
+      });
+  };
+
+  const doneByTechnician = () => {
+    setLoading(true);
+    axios
+      .post(`${process.env.REACT_APP_BASE_URL}/calibration/done-by-technician/${id}`, null, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+      })
+      .catch((error) => {
       });
   };
 
@@ -699,8 +710,8 @@ const TechnicianCalibration = () => {
                 <Grid item sm={4} md={4} lg={4}>
                   <TextField
                     id="outlined-multiline-static"
-                    label="Convidence Level"
-                    placeholder="Convidence Level"
+                    label="Confidence Level"
+                    placeholder="Confidence Level"
                     size="small"
                     rows={4}
                     variant="outlined"

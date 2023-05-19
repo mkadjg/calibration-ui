@@ -168,6 +168,7 @@ const TypewriterCalibration = () => {
             severity: "success",
             message: "Simpan data berhasil"
           });
+          doneByTypewriter();
           setLoading(false);
           handleCloseResultModal();
           getCalibrations();
@@ -181,6 +182,16 @@ const TypewriterCalibration = () => {
         });
         setLoading(false);
         handleCloseResultModal();
+      });
+  };
+
+  const doneByTypewriter = () => {
+    setLoading(true);
+    axios
+      .post(`${process.env.REACT_APP_BASE_URL}/calibration/done-by-typewriter/${id}`, null, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+      })
+      .catch((error) => {
       });
   };
 
