@@ -13,6 +13,8 @@ import {
   Alert,
   Link,
   Avatar,
+  InputAdornment,
+  IconButton,
 } from "@material-ui/core";
 import Footer from "./../../layouts/FullLayout/Footer/Footer";
 import { TopbarHeight } from "../../assets/global/Theme-variable";
@@ -20,6 +22,7 @@ import axios from "axios";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 import logo from "./../../assets/images/logo-quality.jpeg";
+import { Visibility, VisibilityOff } from "@material-ui/icons";
 
 const MainWrapper = experimentalStyled("div")(({ theme }) => ({
   display: "flex",
@@ -55,6 +58,9 @@ const Login = () => {
   // eslint-disable-next-line no-unused-vars
   const [cookies, setCookies] = useCookies({});
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const handleClickShowPassword = () => setShowPassword(!showPassword);
+  const handleMouseDownPassword = () => setShowPassword(!showPassword);
 
   const handleChange = (e) => {
     setData({
@@ -161,7 +167,7 @@ const Login = () => {
                 <TextField
                   id="outlined-password-input"
                   label="Password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   autoComplete="current-password"
                   variant="outlined"
@@ -170,6 +176,19 @@ const Login = () => {
                     mb: 2,
                   }}
                   onChange={handleChange}
+                  InputProps={{ 
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={handleClickShowPassword}
+                          onMouseDown={handleMouseDownPassword}
+                        >
+                          {showPassword ? <Visibility /> : <VisibilityOff />}
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
                 />
 
                 <Button

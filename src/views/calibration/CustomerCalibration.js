@@ -397,7 +397,7 @@ const CustomerCalibration = () => {
           <Button size="small" style={{ margin: '6px 3px 3px 3px' }}
             onClick={() => handleOpenComplainModal(row.id)}
             variant="contained"
-            disabled={!(row.calibrationStatus.calibrationStatusCode === 'FINISHED' && row.isAssessed && !row.isComplain)}
+            disabled={!(row.calibrationStatus.calibrationStatusCode === 'FINISHED' && !row.isComplain)}
             color="error">
             Aduan
           </Button>

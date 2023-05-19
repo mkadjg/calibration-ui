@@ -81,6 +81,17 @@ const Employee = () => {
   }
 
   const handleCloseCreateModal = () => {
+    setBody({
+      nip: '',
+      employeeName: '',
+      email: '',
+      phoneNumber: '',
+      address: '',
+      educationId: 1,
+      jobPositionId: 1,
+      username: '',
+      password: ''
+    });
     setCreateModal(false);
   }
 
@@ -171,6 +182,17 @@ const Employee = () => {
             severity: "success",
             message: "Simpan data berhasil"
           });
+          setBody({
+            nip: '',
+            employeeName: '',
+            email: '',
+            phoneNumber: '',
+            address: '',
+            educationId: 1,
+            jobPositionId: 1,
+            username: '',
+            password: ''
+          });
           setLoading(false);
           handleCloseCreateModal();
           getEmployees();
@@ -181,6 +203,17 @@ const Employee = () => {
           open: true,
           severity: "error",
           message: error.response?.data
+        });
+        setBody({
+          nip: '',
+          employeeName: '',
+          email: '',
+          phoneNumber: '',
+          address: '',
+          educationId: 1,
+          jobPositionId: 1,
+          username: '',
+          password: ''
         });
         setLoading(false);
         handleCloseCreateModal();

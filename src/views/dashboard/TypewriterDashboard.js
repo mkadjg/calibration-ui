@@ -96,6 +96,11 @@ const TypewriterDashboard = () => {
                               Rata-rata Penilaian
                             </Typography>
                           </TableCell>
+                          <TableCell>
+                            <Typography color="textSecondary" variant="h6">
+                              Rata-rata Angka
+                            </Typography>
+                          </TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
@@ -166,6 +171,16 @@ const TypewriterDashboard = () => {
                                 }}
                               >
                                 <Rating name="size-large" value={calibrationAnalysis.averageRate} readOnly size="small" />
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography
+                                sx={{
+                                  fontSize: "15px",
+                                  fontWeight: "500",
+                                }}
+                              >
+                                ({calibrationAnalysis.averageRate})
                               </Typography>
                             </TableCell>
                           </TableRow>

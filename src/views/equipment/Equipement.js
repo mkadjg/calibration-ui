@@ -75,11 +75,6 @@ const Equipment = () => {
     setUpdateModal(false);
   }
 
-  const handleOpenDeleteDialog = (id) => {
-    setId(id);
-    setDeleteDialog(true);
-  }
-
   const handleCloseDeleteDialog = () => {
     setId(null);
     setDeleteDialog(false);
@@ -229,12 +224,6 @@ const Equipment = () => {
             variant="contained"
             color="success">
             Ubah
-          </Button>
-          <Button size="small"
-          onClick={() => handleOpenDeleteDialog(row.id)}
-            variant="contained"
-            color="error">
-            Hapus
           </Button>
         </>
       ),
