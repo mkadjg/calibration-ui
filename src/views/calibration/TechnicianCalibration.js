@@ -59,14 +59,28 @@ const TechnicianCalibration = () => {
   const [loading, setLoading] = useState(false);
 
   const handleResultChange = (e, index) => {
-    setResult([
-      ...result.slice(0, index),
-      {
-        ...result[index],
-        [e.target.name]: e.target.value
-      },
-      ...result.slice(index + 1)
-    ]);
+    const instrumentIndication = result[index].instrumentIndication;
+    if (e.target.name === 'standardIndicationUp') {
+      setResult([
+        ...result.slice(0, index),
+        {
+          ...result[index],
+          [e.target.name]: e.target.value,
+          correctionUp: e.target.value - instrumentIndication
+        },
+        ...result.slice(index + 1)
+      ]);
+    } else if (e.target.name === 'standardIndicationDown') {
+      setResult([
+        ...result.slice(0, index),
+        {
+          ...result[index],
+          [e.target.name]: e.target.value,
+          correctionDown: e.target.value - instrumentIndication
+        },
+        ...result.slice(index + 1)
+      ]);
+    }
   }
 
   const handleReportChange = (e) => {
@@ -595,8 +609,8 @@ const TechnicianCalibration = () => {
                                 type="number"
                                 fullWidth
                                 name="correctionUp"
+                                readOnly
                                 value={result[index].correctionUp}
-                                onChange={(e) => { handleResultChange(e, index) }}
                                 inputProps={{ min: 0, style: { textAlign: 'center' } }}
                               />
                             </TableCell>
@@ -610,8 +624,8 @@ const TechnicianCalibration = () => {
                                 type="number"
                                 fullWidth
                                 name="correctionDown"
+                                readOnly
                                 value={result[index].correctionDown}
-                                onChange={(e) => { handleResultChange(e, index) }}
                                 inputProps={{ min: 0, style: { textAlign: 'center' } }}
                               />
                             </TableCell>
