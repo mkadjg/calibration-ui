@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { Card, CardContent, Box, Typography, Modal, Button, TextField, Divider, Grid, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Rating, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@material-ui/core";
+import { Card, CardContent, Box, Typography, Modal, Button, TextField, Divider, Grid, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Rating, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, MenuItem } from "@material-ui/core";
 
 import DataTable from "react-data-table-component";
 import axios from "axios";
@@ -17,6 +17,9 @@ const TypewriterCalibration = () => {
   const [filterText, setFilterText] = useState('');
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
   const [calibrationReport, setCalibrationReport] = useState([]);
+  const [traceableToSi, setTraceableToSi] = useState([]);
+  const [calibrationMethod, setCalibrationMethod] = useState([]);
+  const [standardCalibrationType, setStandardCalibrationType] = useState([]);
   const [performanceAssessment, setPerformanceAssessment] = useState({
     performanceAssessmentNote: '',
     rating: 0
@@ -44,10 +47,13 @@ const TypewriterCalibration = () => {
     certificateNumber: '',
     calibrationLocation: '',
     calibrationMethod: '',
+    calibrationMethodId: 1,
     standardName: '',
     standardType: '',
+    standardTypeId: 1,
     standardSerialNumber: '',
     standardTraceableToSI: '',
+    standardTraceableToSIId: 1,
     issuanceDate: new Date().toISOString().split('T')[0]
   });
   const [id, setId] = useState(null);
@@ -123,6 +129,45 @@ const TypewriterCalibration = () => {
       .then((response) => {
         if (response.status === 200) {
           setCalibrationReport(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const getCalibrationMethod = (item) => {
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/calibration-method/find-all`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setCalibrationMethod(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const getStandardCalibrationType = (item) => {
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/standard-calibration-type/find-all`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setStandardCalibrationType(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const getTraceableToSi = (item) => {
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/traceable-to-si/find-all`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setTraceableToSi(response.data);
         }
       })
       .catch((error) => {
@@ -229,6 +274,8 @@ const TypewriterCalibration = () => {
         if (response.status === 200) {
           if (response.data.length > 0) {
             setPerformanceAssessment(response.data[0]);
+          } else {
+            setPerformanceAssessment({});
           }
         }
       })
@@ -239,6 +286,9 @@ const TypewriterCalibration = () => {
 
   useEffect(() => {
     getCalibrations();
+    getCalibrationMethod();
+    getStandardCalibrationType();
+    getTraceableToSi();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -467,13 +517,19 @@ const TypewriterCalibration = () => {
                     placeholder="Metode Kalibrasi"
                     rows={4}
                     variant="outlined"
-                    type="text"
+                    select
                     fullWidth
-                    name="calibrationMethod"
-                    value={certificate.calibrationMethod}
+                    name="calibrationMethodId"
+                    value={certificate.calibrationMethodId}
                     onChange={handleCertificateChange}
                     sx={{ mb: 2 }}
-                  />
+                  >
+                    {calibrationMethod.map((option) => (
+                      <MenuItem key={option.id} value={option.id}>
+                        {option.calibrationMethodName}
+                      </MenuItem>
+                    ))}
+                  </TextField>
                 </Grid>
                 <Grid item sm={6} md={6} lg={6}>
                   <TextField
@@ -527,13 +583,19 @@ const TypewriterCalibration = () => {
                     placeholder="Metode / Type Standar Kalibrasi"
                     rows={4}
                     variant="outlined"
-                    type="text"
+                    select
                     fullWidth
-                    name="standardType"
-                    value={certificate.standardType}
+                    name="standardTypeId"
+                    value={certificate.standardTypeId}
                     onChange={handleCertificateChange}
                     sx={{ mb: 2 }}
-                  />
+                  >
+                    {standardCalibrationType.map((option) => (
+                      <MenuItem key={option.id} value={option.id}>
+                        {option.standardCalibrationTypeName}
+                      </MenuItem>
+                    ))}
+                  </TextField>
                 </Grid>
                 <Grid item sm={6} md={6} lg={6}>
                   <TextField
@@ -555,13 +617,20 @@ const TypewriterCalibration = () => {
                     placeholder="Traceable Throudh SI"
                     rows={4}
                     variant="outlined"
-                    type="text"
+                    select
                     fullWidth
-                    name="standardTraceableToSI"
-                    value={certificate.standardTraceableToSI}
+                    name="standardTraceableToSIId"
+                    value={certificate.standardTraceableToSIId}
                     onChange={handleCertificateChange}
                     sx={{ mb: 2 }}
-                  />
+                  >
+                    {traceableToSi.map((option) => (
+                      <MenuItem key={option.id} value={option.id}>
+                        {option.traceableToSiName}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  
                 </Grid>
               </Grid>
 
@@ -675,7 +744,7 @@ const TypewriterCalibration = () => {
                       secondary={item.equipment?.manufacturer ? item.equipment?.manufacturer : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kapasitas"
+                    <ListItemText primary="Kapasitas (psi)"
                       secondary={item.equipment?.capacity ? item.equipment?.capacity : '-'} />
                   </ListItem>
                 </List>
@@ -688,7 +757,7 @@ const TypewriterCalibration = () => {
                       secondary={item.equipment?.modelType ? item.equipment?.modelType : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Graduation"
+                    <ListItemText primary="Graduation (psi)"
                       secondary={item.equipment?.graduation ? item.equipment?.graduation : '-'} />
                   </ListItem>
                 </List>
@@ -729,7 +798,7 @@ const TypewriterCalibration = () => {
                       secondary={item.calibrationLocation ? item.calibrationLocation : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary={`Kondisi T sebelum (` + String.fromCharCode(176) + `c)`}
+                    <ListItemText primary={`Kondisi T sebelum (` + String.fromCharCode(176) + `C)`}
                       secondary={item.envConditionTBefore ? item.envConditionTBefore : '-'} />
                   </ListItem>
                   <ListItem>
@@ -743,10 +812,10 @@ const TypewriterCalibration = () => {
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
                     <ListItemText primary="Metode Kalibrasi"
-                      secondary={item.calibrationMethod ? item.calibrationMethod : '-'} />
+                      secondary={item.calibrationMethode ? item.calibrationMethode.calibrationMethodName : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary={`Kondisi T setelah (` + String.fromCharCode(176) + `c)`}
+                    <ListItemText primary={`Kondisi T setelah (` + String.fromCharCode(176) + `C)`}
                       secondary={item.envConditionTAfter ? item.envConditionTAfter : '-'} />
                   </ListItem>
                   <ListItem>
@@ -807,7 +876,7 @@ const TypewriterCalibration = () => {
               <Grid item md={4}>
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
-                    <ListItemText primary="Uncertainly"
+                    <ListItemText primary="Uncertainly (psi)"
                       secondary={item.uncertainly != null ? item.uncertainly : '-'} />
                   </ListItem>
                 </List>
@@ -816,7 +885,7 @@ const TypewriterCalibration = () => {
               <Grid item md={4}>
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
-                    <ListItemText primary="Confidence Level"
+                    <ListItemText primary="Confidence Level (%)"
                       secondary={item.confidenceLevel != null ? item.confidenceLevel : '-'} />
                   </ListItem>
                 </List>
@@ -843,7 +912,7 @@ const TypewriterCalibration = () => {
                   </ListItem>
                   <ListItem>
                     <ListItemText primary="Traceable Through SI"
-                      secondary={item.standardTraceableToSI ? item.standardTraceableToSI : '-'} />
+                      secondary={item.traceableToSi ? item.traceableToSi.traceableToSiName : '-'} />
                   </ListItem>
                 </List>
               </Grid>
@@ -852,7 +921,7 @@ const TypewriterCalibration = () => {
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
                     <ListItemText primary="Merk / Tipe Standar Kalibrasi"
-                      secondary={item.standardType ? item.standardType : '-'} />
+                      secondary={item.standardCalibrationType ? item.standardCalibrationType.standardCalibrationTypeName : '-'} />
                   </ListItem>
                   <ListItem>
                     <ListItemText primary="Tanggal Penerbitan"

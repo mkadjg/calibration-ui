@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { Card, CardContent, Box, Typography, Modal, Button, TextField, Divider, Grid, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Rating, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@material-ui/core";
+import { Card, CardContent, Box, Typography, Modal, Button, TextField, Divider, Grid, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Rating, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, MenuItem } from "@material-ui/core";
 
 import DataTable from "react-data-table-component";
 import axios from "axios";
@@ -16,6 +16,9 @@ const TypewriterComplain = () => {
   // filter
   const [filterText, setFilterText] = useState('');
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
+  const [traceableToSi, setTraceableToSi] = useState([]);
+  const [calibrationMethod, setCalibrationMethod] = useState([]);
+  const [standardCalibrationType, setStandardCalibrationType] = useState([]);
   const [performanceAssessment, setPerformanceAssessment] = useState({
     performanceAssessmentNote: '',
     rating: 0
@@ -44,10 +47,13 @@ const TypewriterComplain = () => {
     certificateNumber: '',
     calibrationLocation: '',
     calibrationMethod: '',
+    calibrationMethodId: 1,
     standardName: '',
     standardType: '',
+    standardTypeId: 1,
     standardSerialNumber: '',
     standardTraceableToSI: '',
+    standardTraceableToSIId: 1,
     issuanceDate: new Date().toISOString().split('T')[0]
   });
   const [id, setId] = useState(null);
@@ -68,14 +74,17 @@ const TypewriterComplain = () => {
       certificateNumber: item.calibration.certificateNumber,
       calibrationLocation: item.calibration.calibrationLocation,
       calibrationMethod: item.calibration.calibrationMethod,
+      calibrationMethodId: item.calibration.calibrationMethode.id,
       envConditionTBefore: item.calibration.envConditionTBefore,
       envConditionTAfter: item.calibration.envConditionTAfter,
       envConditionRhBefore: item.calibration.envConditionRhBefore,
       envConditionRhAfter: item.calibration.envConditionRhAfter,
       standardName: item.calibration.standardName,
       standardType: item.calibration.standardType,
+      standardTypeId: item.calibration.standardCalibrationType.id,
       standardSerialNumber: item.calibration.standardSerialNumber,
       standardTraceableToSI: item.calibration.standardTraceableToSI,
+      standardTraceableToSIId: item.calibration.traceableToSi.id,
       issuanceDate: item.calibration.issuanceDate
     })
     setResultModal(true);
@@ -178,6 +187,45 @@ const TypewriterComplain = () => {
       });
   };
 
+  const getCalibrationMethod = (item) => {
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/calibration-method/find-all`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setCalibrationMethod(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const getStandardCalibrationType = (item) => {
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/standard-calibration-type/find-all`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setStandardCalibrationType(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const getTraceableToSi = (item) => {
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/traceable-to-si/find-all`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setTraceableToSi(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   const getPerformanceAssessment = (id) => {
     axios
       .get(`${process.env.REACT_APP_BASE_URL}/performance-assessment/find-by-calibration-id/${id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
@@ -185,6 +233,8 @@ const TypewriterComplain = () => {
         if (response.status === 200) {
           if (response.data.length > 0) {
             setPerformanceAssessment(response.data[0]);
+          } else {
+            setPerformanceAssessment({});
           }
         }
       })
@@ -259,6 +309,9 @@ const TypewriterComplain = () => {
 
   useEffect(() => {
     getComplains();
+    getCalibrationMethod();
+    getStandardCalibrationType();
+    getTraceableToSi();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -477,13 +530,19 @@ const TypewriterComplain = () => {
                     placeholder="Metode Kalibrasi"
                     rows={4}
                     variant="outlined"
-                    type="text"
+                    select
                     fullWidth
                     name="calibrationMethod"
-                    value={certificate.calibrationMethod}
+                    value={certificate.calibrationMethodId}
                     onChange={handleCertificateChange}
                     sx={{ mb: 2 }}
-                  />
+                  >
+                    {calibrationMethod.map((option) => (
+                      <MenuItem key={option.id} value={option.id}>
+                        {option.calibrationMethodName}
+                      </MenuItem>
+                    ))}
+                  </TextField>
                 </Grid>
                 <Grid item sm={6} md={6} lg={6}>
                   <TextField
@@ -537,13 +596,19 @@ const TypewriterComplain = () => {
                     placeholder="Metode / Type Standar Kalibrasi"
                     rows={4}
                     variant="outlined"
-                    type="text"
+                    select
                     fullWidth
                     name="standardType"
-                    value={certificate.standardType}
+                    value={certificate.standardTypeId}
                     onChange={handleCertificateChange}
                     sx={{ mb: 2 }}
-                  />
+                  >
+                  {standardCalibrationType.map((option) => (
+                      <MenuItem key={option.id} value={option.id}>
+                        {option.standardCalibrationTypeName}
+                      </MenuItem>
+                    ))}
+                  </TextField>
                 </Grid>
                 <Grid item sm={6} md={6} lg={6}>
                   <TextField
@@ -565,13 +630,19 @@ const TypewriterComplain = () => {
                     placeholder="Traceable Throudh SI"
                     rows={4}
                     variant="outlined"
-                    type="text"
+                    select
                     fullWidth
                     name="standardTraceableToSI"
-                    value={certificate.standardTraceableToSI}
+                    value={certificate.standardTraceableToSIId}
                     onChange={handleCertificateChange}
                     sx={{ mb: 2 }}
-                  />
+                  >
+                    {traceableToSi.map((option) => (
+                      <MenuItem key={option.id} value={option.id}>
+                        {option.traceableToSiName}
+                      </MenuItem>
+                    ))}
+                  </TextField>
                 </Grid>
               </Grid>
 
@@ -685,7 +756,7 @@ const TypewriterComplain = () => {
                       secondary={item.equipment?.manufacturer ? item.equipment?.manufacturer : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kapasitas"
+                    <ListItemText primary="Kapasitas (psi)"
                       secondary={item.equipment?.capacity ? item.equipment?.capacity : '-'} />
                   </ListItem>
                 </List>
@@ -739,11 +810,11 @@ const TypewriterComplain = () => {
                       secondary={item.calibrationLocation ? item.calibrationLocation : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi T sebelum"
+                  <ListItemText primary={`Kondisi T sebelum (` + String.fromCharCode(176) + `C)`}
                       secondary={item.envConditionTBefore ? item.envConditionTBefore : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi RH sebelum"
+                    <ListItemText primary="Kondisi RH sebelum (%)"
                       secondary={item.envConditionRhBefore ? item.envConditionRhBefore : '-'} />
                   </ListItem>
                 </List>
@@ -756,11 +827,11 @@ const TypewriterComplain = () => {
                       secondary={item.calibrationMethod ? item.calibrationMethod : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi T setelah"
+                  <ListItemText primary={`Kondisi T setelah (` + String.fromCharCode(176) + `C)`}
                       secondary={item.envConditionTAfter ? item.envConditionTAfter : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi RH setelah"
+                    <ListItemText primary="Kondisi RH setelah (%)"
                       secondary={item.envConditionRhAfter ? item.envConditionRhAfter : '-'} />
                   </ListItem>
                 </List>
@@ -817,7 +888,7 @@ const TypewriterComplain = () => {
               <Grid item md={4}>
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
-                    <ListItemText primary="Uncertainly"
+                    <ListItemText primary="Uncertainly (psi)"
                       secondary={item.uncertainly != null ? item.uncertainly : '-'} />
                   </ListItem>
                 </List>
@@ -826,7 +897,7 @@ const TypewriterComplain = () => {
               <Grid item md={4}>
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
-                    <ListItemText primary="Confidence Level"
+                    <ListItemText primary="Confidence Level (%)"
                       secondary={item.confidenceLevel != null ? item.confidenceLevel : '-'} />
                   </ListItem>
                 </List>

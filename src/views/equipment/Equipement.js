@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { Card, CardContent, Box, Typography, Modal, Button, TextField, Divider, Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, CircularProgress } from "@material-ui/core";
+import { Card, CardContent, Box, Typography, Modal, Button, TextField, Divider, Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Snackbar, Alert, CircularProgress, InputAdornment } from "@material-ui/core";
 
 import DataTable from "react-data-table-component";
 import axios from "axios";
@@ -404,6 +404,9 @@ const Equipment = () => {
                 name="capacity"
                 onChange={handleCreateChange}
                 fullWidth
+                InputProps={{
+                  endAdornment: <InputAdornment position="start">(psi)</InputAdornment>,
+                }}
                 sx={{
                   mb: 2,
                 }}
@@ -417,6 +420,9 @@ const Equipment = () => {
                 name="graduation"
                 onChange={handleCreateChange}
                 fullWidth
+                InputProps={{
+                  endAdornment: <InputAdornment position="start">(psi)</InputAdornment>,
+                }}
                 sx={{
                   mb: 2,
                 }}
@@ -534,6 +540,9 @@ const Equipment = () => {
                 value={item.capacity}
                 onChange={handleUpdateChange}
                 fullWidth
+                InputProps={{
+                  endAdornment: <InputAdornment position="start">(psi)</InputAdornment>,
+                }}
                 sx={{
                   mb: 2,
                 }}
@@ -548,6 +557,9 @@ const Equipment = () => {
                 value={item.graduation}
                 onChange={handleUpdateChange}
                 fullWidth
+                InputProps={{
+                  endAdornment: <InputAdornment position="start">(psi)</InputAdornment>,
+                }}
                 sx={{
                   mb: 2,
                 }}

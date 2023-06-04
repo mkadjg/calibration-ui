@@ -285,6 +285,8 @@ const CustomerCalibration = () => {
         if (response.status === 200) {
           if (response.data.length > 0) {
             setPerformanceAssessment(response.data[0]);
+          } else {
+            setPerformanceAssessment({});
           }
         }
       })
@@ -712,7 +714,7 @@ const CustomerCalibration = () => {
                       secondary={item.equipment?.manufacturer ? item.equipment?.manufacturer : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kapasitas"
+                    <ListItemText primary="Kapasitas (psi)"
                       secondary={item.equipment?.capacity ? item.equipment?.capacity : '-'} />
                   </ListItem>
                 </List>
@@ -725,7 +727,7 @@ const CustomerCalibration = () => {
                       secondary={item.equipment?.modelType ? item.equipment?.modelType : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Graduation"
+                    <ListItemText primary="Graduation (psi)"
                       secondary={item.equipment?.graduation ? item.equipment?.graduation : '-'} />
                   </ListItem>
                 </List>
@@ -766,11 +768,11 @@ const CustomerCalibration = () => {
                       secondary={item.calibrationLocation ? item.calibrationLocation : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi T sebelum"
+                  <ListItemText primary={`Kondisi T sebelum (` + String.fromCharCode(176) + `C)`}
                       secondary={item.envConditionTBefore ? item.envConditionTBefore : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi RH sebelum"
+                    <ListItemText primary="Kondisi RH sebelum (%)"
                       secondary={item.envConditionRhBefore ? item.envConditionRhBefore : '-'} />
                   </ListItem>
                 </List>
@@ -780,14 +782,14 @@ const CustomerCalibration = () => {
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
                     <ListItemText primary="Metode Kalibrasi"
-                      secondary={item.calibrationMethod ? item.calibrationMethod : '-'} />
+                      secondary={item.calibrationMethode ? item.calibrationMethode.calibrationMethodName : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi T setelah"
+                  <ListItemText primary={`Kondisi T setelah (` + String.fromCharCode(176) + `C)`}
                       secondary={item.envConditionTAfter ? item.envConditionTAfter : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi RH setelah"
+                    <ListItemText primary="Kondisi RH setelah (%)"
                       secondary={item.envConditionRhAfter ? item.envConditionRhAfter : '-'} />
                   </ListItem>
                 </List>
@@ -844,7 +846,7 @@ const CustomerCalibration = () => {
               <Grid item md={4}>
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
-                    <ListItemText primary="Uncertainly"
+                    <ListItemText primary="Uncertainly (psi)"
                       secondary={item.uncertainly != null ? item.uncertainly : '-'} />
                   </ListItem>
                 </List>
@@ -853,7 +855,7 @@ const CustomerCalibration = () => {
               <Grid item md={4}>
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
-                    <ListItemText primary="Confidence Level"
+                    <ListItemText primary="Confidence Level (%)"
                       secondary={item.confidenceLevel != null ? item.confidenceLevel : '-'} />
                   </ListItem>
                 </List>
@@ -880,7 +882,7 @@ const CustomerCalibration = () => {
                   </ListItem>
                   <ListItem>
                     <ListItemText primary="Traceable Through SI"
-                      secondary={item.standardTraceableToSI ? item.standardTraceableToSI : '-'} />
+                      secondary={item.traceableToSi ? item.traceableToSi.traceableToSiName : '-'} />
                   </ListItem>
                 </List>
               </Grid>
@@ -889,7 +891,7 @@ const CustomerCalibration = () => {
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
                     <ListItemText primary="Merk / Tipe Standar Kalibrasi"
-                      secondary={item.standardType ? item.standardType : '-'} />
+                      secondary={item.standardCalibrationType ? item.standardCalibrationType.standardCalibrationTypeName : '-'} />
                   </ListItem>
                   <ListItem>
                     <ListItemText primary="Tanggal Penerbitan"

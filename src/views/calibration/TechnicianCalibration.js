@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { Card, CardContent, Box, Typography, Modal, Button, TextField, Divider, Grid, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Autocomplete, Rating, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@material-ui/core";
+import { Card, CardContent, Box, Typography, Modal, Button, TextField, Divider, Grid, Snackbar, Alert, CircularProgress, List, ListItem, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Autocomplete, Rating, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, InputAdornment } from "@material-ui/core";
 
 import DataTable from "react-data-table-component";
 import axios from "axios";
@@ -12,6 +12,8 @@ const TechnicianCalibration = () => {
   // eslint-disable-next-line no-unused-vars
   const [cookies, setCookies] = useCookies({});
   const [calibrations, setCalibrations] = useState([]);
+  const [files, setFiles] = useState([null]);
+  const [filesArr, setFilesArr] = useState([null]);
 
   // filter
   const [filterText, setFilterText] = useState('');
@@ -95,6 +97,17 @@ const TechnicianCalibration = () => {
       ...forward,
       employeeId: v.id
     })
+  }
+
+  const fileObj = [];
+  const fileArray = [];
+  const handleUploadMultipleFiles = (e) => {
+    fileObj.push(e.target.files)
+    for (const element of fileObj[0]) {
+        fileArray.push(URL.createObjectURL(element))
+    }
+    setFilesArr(fileArray);
+    setFiles(fileObj);
   }
 
   const handleOpenResultModal = (item) => {
@@ -237,6 +250,7 @@ const TechnicianCalibration = () => {
             message: "Simpan data berhasil"
           });
           doneByTechnician();
+          uploadRawData();
           setLoading(false);
           handleCloseResultModal();
           getCalibrations();
@@ -250,6 +264,19 @@ const TechnicianCalibration = () => {
         });
         setLoading(false);
         handleCloseResultModal();
+      });
+  };
+
+  const uploadRawData = () => {
+    const filesData = new FormData();
+    for (const element of files[0]) {
+      filesData.append("files", element);
+    }
+    axios
+      .post(`${process.env.REACT_APP_BASE_URL}/calibration-raw-data/${id}`, filesData, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+      })
+      .catch((error) => {
       });
   };
 
@@ -297,6 +324,8 @@ const TechnicianCalibration = () => {
         if (response.status === 200) {
           if (response.data.length > 0) {
             setPerformanceAssessment(response.data[0]);
+          } else {
+            setPerformanceAssessment({});
           }
         }
       })
@@ -650,6 +679,9 @@ const TechnicianCalibration = () => {
                     fullWidth
                     size="small"
                     name="envConditionTBefore"
+                    InputProps={{
+                      endAdornment: <InputAdornment position="start">&#8451;</InputAdornment>,
+                    }}
                     value={report.envConditionTBefore}
                     onChange={handleReportChange}
                     sx={{ mb: 2 }}
@@ -664,6 +696,9 @@ const TechnicianCalibration = () => {
                     fullWidth
                     size="small"
                     name="envConditionTAfter"
+                    InputProps={{
+                      endAdornment: <InputAdornment position="start">&#8451;</InputAdornment>,
+                    }}
                     value={report.envConditionTAfter}
                     onChange={handleReportChange}
                     sx={{ mb: 2 }}
@@ -680,6 +715,9 @@ const TechnicianCalibration = () => {
                     fullWidth
                     size="small"
                     name="envConditionRhBefore"
+                    InputProps={{
+                      endAdornment: <InputAdornment position="start">%</InputAdornment>,
+                    }}
                     value={report.envConditionRhBefore}
                     onChange={handleReportChange}
                     sx={{ mb: 2 }}
@@ -694,6 +732,9 @@ const TechnicianCalibration = () => {
                     fullWidth
                     size="small"
                     name="envConditionRhAfter"
+                    InputProps={{
+                      endAdornment: <InputAdornment position="start">%</InputAdornment>,
+                    }}
                     value={report.envConditionRhAfter}
                     onChange={handleReportChange}
                     sx={{ mb: 2 }}
@@ -715,6 +756,9 @@ const TechnicianCalibration = () => {
                     type="number"
                     fullWidth
                     name="uncertainly"
+                    InputProps={{
+                      endAdornment: <InputAdornment position="start">psi</InputAdornment>,
+                    }}
                     value={report.uncertainly}
                     onChange={handleReportChange}
                     sx={{ mb: 2 }}
@@ -732,6 +776,9 @@ const TechnicianCalibration = () => {
                     type="number"
                     fullWidth
                     name="confidenceLevel"
+                    InputProps={{
+                      endAdornment: <InputAdornment position="start">%</InputAdornment>,
+                    }}
                     value={report.confidenceLevel}
                     onChange={handleReportChange}
                     sx={{ mb: 2 }}
@@ -756,6 +803,29 @@ const TechnicianCalibration = () => {
                   />
                 </Grid>
               </Grid>
+
+              <Divider sx={{ mt: '10px', mb: '25px' }}/>
+
+              <div className="form-group multi-preview">
+                {(filesArr || []).map(url => (
+                    <img height={150} width={120} key={url} src={url} alt="..." />
+                ))}
+              </div>
+
+              <Typography>Input Data Mentah</Typography>
+              <TextField
+                id="outlined-file-input"
+                size="small"
+                variant="outlined"
+                type="file"
+                fullWidth
+                name="files"
+                inputProps={{
+                  multiple: true
+                }}
+                sx={{ mb: 2 }}
+                onChange={handleUploadMultipleFiles}
+              />
 
               <div>
                 <Button onClick={createReportCalibration}
@@ -931,7 +1001,7 @@ const TechnicianCalibration = () => {
                       secondary={item.equipment?.manufacturer ? item.equipment?.manufacturer : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kapasitas"
+                    <ListItemText primary="Kapasitas (psi)"
                       secondary={item.equipment?.capacity ? item.equipment?.capacity : '-'} />
                   </ListItem>
                 </List>
@@ -944,7 +1014,7 @@ const TechnicianCalibration = () => {
                       secondary={item.equipment?.modelType ? item.equipment?.modelType : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Graduation"
+                    <ListItemText primary="Graduation (psi)"
                       secondary={item.equipment?.graduation ? item.equipment?.graduation : '-'} />
                   </ListItem>
                 </List>
@@ -985,11 +1055,11 @@ const TechnicianCalibration = () => {
                       secondary={item.calibrationLocation ? item.calibrationLocation : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi T sebelum"
+                  <ListItemText primary={`Kondisi T sebelum (` + String.fromCharCode(176) + `C)`}
                       secondary={item.envConditionTBefore ? item.envConditionTBefore : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi RH sebelum"
+                  <ListItemText primary="Kondisi RH sebelum (%)"
                       secondary={item.envConditionRhBefore ? item.envConditionRhBefore : '-'} />
                   </ListItem>
                 </List>
@@ -999,14 +1069,14 @@ const TechnicianCalibration = () => {
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
                     <ListItemText primary="Metode Kalibrasi"
-                      secondary={item.calibrationMethod ? item.calibrationMethod : '-'} />
+                      secondary={item.calibrationMethode ? item.calibrationMethode.calibrationMethodName : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi T setelah"
+                  <ListItemText primary={`Kondisi T setelah (` + String.fromCharCode(176) + `C)`}
                       secondary={item.envConditionTAfter ? item.envConditionTAfter : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi RH setelah"
+                  <ListItemText primary="Kondisi RH setelah (%)"
                       secondary={item.envConditionRhAfter ? item.envConditionRhAfter : '-'} />
                   </ListItem>
                 </List>
@@ -1063,7 +1133,7 @@ const TechnicianCalibration = () => {
               <Grid item md={4}>
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
-                    <ListItemText primary="Uncertainly"
+                    <ListItemText primary="Uncertainly (psi)"
                       secondary={item.uncertainly != null ? item.uncertainly : '-'} />
                   </ListItem>
                 </List>
@@ -1072,7 +1142,7 @@ const TechnicianCalibration = () => {
               <Grid item md={4}>
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
-                    <ListItemText primary="Confidence Level"
+                    <ListItemText primary="Confidence Level (%)"
                       secondary={item.confidenceLevel != null ? item.confidenceLevel : '-'} />
                   </ListItem>
                 </List>
@@ -1099,7 +1169,7 @@ const TechnicianCalibration = () => {
                   </ListItem>
                   <ListItem>
                     <ListItemText primary="Traceable Through SI"
-                      secondary={item.standardTraceableToSI ? item.standardTraceableToSI : '-'} />
+                      secondary={item.traceableToSi ? item.traceableToSi.traceableToSiName : '-'} />
                   </ListItem>
                 </List>
               </Grid>
@@ -1108,7 +1178,7 @@ const TechnicianCalibration = () => {
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
                     <ListItemText primary="Merk / Tipe Standar Kalibrasi"
-                      secondary={item.standardType ? item.standardType : '-'} />
+                      secondary={item.standardCalibrationType ? item.standardCalibrationTypeName : '-'} />
                   </ListItem>
                   <ListItem>
                     <ListItemText primary="Tanggal Penerbitan"

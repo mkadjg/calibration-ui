@@ -18,6 +18,7 @@ const AdminCalibration = () => {
   const [filterText, setFilterText] = useState('');
   const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
   const [calibrationTrack, setCalibrationTrack] = useState([]);
+  const [rawData, setRawData] = useState([]);
   const [performanceAssessment, setPerformanceAssessment] = useState({
     performanceAssessmentNote: '',
     rating: 0
@@ -91,6 +92,7 @@ const AdminCalibration = () => {
     setItem(item);
     getCalibrationReport(item);
     getPerformanceAssessment(item.id);
+    getRawData(item.id);
     setDetailModal(true);
   }
 
@@ -159,7 +161,22 @@ const AdminCalibration = () => {
         if (response.status === 200) {
           if (response.data.length > 0) {
             setPerformanceAssessment(response.data[0]);
+          } else {
+            setPerformanceAssessment({});
           }
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const getRawData = (id) => {
+    axios
+      .get(`${process.env.REACT_APP_BASE_URL}/calibration-raw-data/${id}`, { headers: { Authorization: `Bearer ${cookies.auth.token}` } })
+      .then((response) => {
+        if (response.status === 200) {
+          setRawData(response.data);
         }
       })
       .catch((error) => {
@@ -640,7 +657,7 @@ const AdminCalibration = () => {
                       secondary={item.equipment?.manufacturer ? item.equipment?.manufacturer : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kapasitas"
+                    <ListItemText primary="Kapasitas (psi)"
                       secondary={item.equipment?.capacity ? item.equipment?.capacity : '-'} />
                   </ListItem>
                 </List>
@@ -653,7 +670,7 @@ const AdminCalibration = () => {
                       secondary={item.equipment?.modelType ? item.equipment?.modelType : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Graduation"
+                    <ListItemText primary="Graduation (psi)"
                       secondary={item.equipment?.graduation ? item.equipment?.graduation : '-'} />
                   </ListItem>
                 </List>
@@ -694,11 +711,11 @@ const AdminCalibration = () => {
                       secondary={item.calibrationLocation ? item.calibrationLocation : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi T sebelum"
+                  <ListItemText primary={`Kondisi T sebelum (` + String.fromCharCode(176) + `C)`}
                       secondary={item.envConditionTBefore ? item.envConditionTBefore : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi RH sebelum"
+                    <ListItemText primary="Kondisi RH sebelum (%)"
                       secondary={item.envConditionRhBefore ? item.envConditionRhBefore : '-'} />
                   </ListItem>
                 </List>
@@ -708,14 +725,14 @@ const AdminCalibration = () => {
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
                     <ListItemText primary="Metode Kalibrasi"
-                      secondary={item.calibrationMethod ? item.calibrationMethod : '-'} />
+                      secondary={item.calibrationMethode ? item.calibrationMethode.calibrationMethodName : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi T setelah"
+                  <ListItemText primary={`Kondisi T setelah (` + String.fromCharCode(176) + `C)`}
                       secondary={item.envConditionTAfter ? item.envConditionTAfter : '-'} />
                   </ListItem>
                   <ListItem>
-                    <ListItemText primary="Kondisi RH setelah"
+                    <ListItemText primary="Kondisi RH setelah (%)"
                       secondary={item.envConditionRhAfter ? item.envConditionRhAfter : '-'} />
                   </ListItem>
                 </List>
@@ -772,7 +789,7 @@ const AdminCalibration = () => {
               <Grid item md={4}>
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
-                    <ListItemText primary="Uncertainly"
+                    <ListItemText primary="Uncertainly (psi)"
                       secondary={item.uncertainly != null ? item.uncertainly : '-'} />
                   </ListItem>
                 </List>
@@ -781,7 +798,7 @@ const AdminCalibration = () => {
               <Grid item md={4}>
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
-                    <ListItemText primary="Confidence Level"
+                    <ListItemText primary="Confidence Level (%)"
                       secondary={item.confidenceLevel != null ? item.confidenceLevel : '-'} />
                   </ListItem>
                 </List>
@@ -808,7 +825,7 @@ const AdminCalibration = () => {
                   </ListItem>
                   <ListItem>
                     <ListItemText primary="Traceable Through SI"
-                      secondary={item.standardTraceableToSI ? item.standardTraceableToSI : '-'} />
+                      secondary={item.traceableToSi ? item.traceableToSi.traceableToSiName : '-'} />
                   </ListItem>
                 </List>
               </Grid>
@@ -817,7 +834,7 @@ const AdminCalibration = () => {
                 <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
                   <ListItem>
                     <ListItemText primary="Merk / Tipe Standar Kalibrasi"
-                      secondary={item.standardType ? item.standardType : '-'} />
+                      secondary={item.standardCalibrationType ? item.standardCalibrationType.standardCalibrationTypeName : '-'} />
                   </ListItem>
                   <ListItem>
                     <ListItemText primary="Tanggal Penerbitan"
@@ -854,6 +871,19 @@ const AdminCalibration = () => {
                       secondary={performanceAssessment.performanceAssessmentNote ? performanceAssessment.performanceAssessmentNote : '-'} />
                   </ListItem>
                 </List>
+              </Grid>
+            </Grid>
+
+            <Divider />
+
+            <Typography sx={{ m: 2 }}>Data Mentah</Typography>
+            <Grid container>
+              <Grid item md={12}>
+                <div className="form-group multi-preview">
+                  {(rawData || []).map(data => (
+                      <img height={550} width={500} key={data.id} src={'data:image/jpeg;base64,' + data.document} alt="..." />
+                  ))}
+                </div>
               </Grid>
             </Grid>
 
